@@ -1,0 +1,227 @@
+<%- include('./partials/header') %>
+
+<div class="container mx-auto px-4 md:px-8 py-8 flex-grow" style="background-color: #FAFAFA;">
+    <h1 class="text-3xl font-bold mb-8" style="color: #1E1E1E;">Checkout</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Payment Form -->
+        <div class="lg:col-span-2">
+            <div class="rounded-lg shadow-md p-6 mb-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+                <h2 class="text-2xl font-bold mb-6" style="color: #1E1E1E;">Payment Details</h2>
+                <form action="/process-payment" method="post" class="space-y-4">
+                    <div>
+                        <label class="block mb-2 font-medium" style="color: #1E1E1E;">Card Number</label>
+                        <input type="text" name="cardNumber" placeholder="1234 5678 9012 3456" required maxlength="19" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block mb-2 font-medium" style="color: #1E1E1E;">Expiry Date</label>
+                            <input type="text" name="expiry" placeholder="MM/YY" required maxlength="5" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium" style="color: #1E1E1E;">CVV</label>
+                            <input type="text" name="cvv" placeholder="123" required maxlength="3" minlength="3" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block mb-2 font-medium" style="color: #1E1E1E;">PIN</label>
+                            <input type="password" name="pin" placeholder="1234" required maxlength="4" minlength="4" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium" style="color: #1E1E1E;">Confirm PIN</label>
+                            <input type="password" name="confirmPin" placeholder="1234" required maxlength="4" minlength="4" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-medium" style="color: #1E1E1E;">Cardholder Name</label>
+                        <input type="text" name="cardName" placeholder="John Doe" required pattern="^[a-zA-Z\s]+$" title="Cardholder name should contain only alphabets and spaces" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                    </div>
+                    <button type="submit" class="w-full px-6 py-3 rounded-lg text-white font-semibold transition-all duration-300 btn-primary" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+                        Complete Payment
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="rounded-lg shadow-md p-6 sticky top-20" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+                <h3 class="text-2xl font-bold mb-6" style="color: #1E1E1E;">Order Summary</h3>
+                <div class="space-y-4 mb-6">
+                    <% user.cart.forEach(function(item){ %>
+                        <div class="flex justify-between items-center pb-4 border-b" style="border-color: #E5E5E5;">
+                            <div>
+                                <p class="font-medium" style="color: #1E1E1E;"><%= item.name %></p>
+                                <p class="text-sm" style="color: #666;">₹ <%= item.price %></p>
+                            </div>
+                        </div>
+                    <% }) %>
+                    <div class="flex justify-between pt-4">
+                        <span style="color: #666;">Subtotal</span>
+                        <span style="color: #1E1E1E;">₹ <%= bill - 20 %></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span style="color: #666;">Platform Fee</span>
+                        <span style="color: #1E1E1E;">₹ 20</span>
+                    </div>
+                    <div class="border-t pt-4" style="border-color: #E5E5E5;">
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-semibold" style="color: #1E1E1E;">Total</span>
+                            <span class="text-2xl font-bold" style="color: #B76E79;">₹ <%= bill %></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const cardNumberInput = document.querySelector('input[name="cardNumber"]');
+    const expiryInput = document.querySelector('input[name="expiry"]');
+    const cvvInput = document.querySelector('input[name="cvv"]');
+    const pinInput = document.querySelector('input[name="pin"]');
+    const confirmPinInput = document.querySelector('input[name="confirmPin"]');
+    
+    // Format card number with spaces
+    cardNumberInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 16) value = value.substring(0, 16);
+        
+        // Add spaces every 4 digits
+        value = value.replace(/(.{4})/g, '$1 ').trim();
+        
+        e.target.value = value;
+        
+        // Validate length
+        if (value.replace(/\s/g, '').length !== 16) {
+            e.target.setCustomValidity('Card number must be 16 digits');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+    
+    // Format expiry date
+    expiryInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.substring(0, 4);
+        
+        // Add slash after 2 digits
+        if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2);
+        }
+        
+        e.target.value = value;
+        
+        // Validate format MM/YY
+        if (!/^\d{2}\/\d{2}$/.test(value)) {
+            e.target.setCustomValidity('Invalid expiry date format (MM/YY)');
+        } else {
+            const [month, year] = value.split('/');
+            const monthNum = parseInt(month);
+            const yearNum = parseInt(year) + 2000;
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+            
+            if (monthNum < 1 || monthNum > 12) {
+                e.target.setCustomValidity('Invalid month');
+            } else if (yearNum < currentYear || (yearNum === currentYear && monthNum < currentMonth)) {
+                e.target.setCustomValidity('Card has expired');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        }
+    });
+    
+    // Validate CVV
+    cvvInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 3) value = value.substring(0, 3);
+        e.target.value = value;
+        
+        if (value.length !== 3) {
+            e.target.setCustomValidity('CVV must be 3 digits');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+    
+    // Validate PIN
+    pinInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.substring(0, 4);
+        e.target.value = value;
+        
+        if (value.length !== 4) {
+            e.target.setCustomValidity('PIN must be 4 digits');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+    
+    // Validate confirm PIN
+    confirmPinInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.substring(0, 4);
+        e.target.value = value;
+        
+        if (value !== pinInput.value) {
+            e.target.setCustomValidity('PINs do not match');
+        } else if (value.length !== 4) {
+            e.target.setCustomValidity('PIN must be 4 digits');
+        } else {
+            e.target.setCustomValidity('');
+        }
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        const cardNumber = cardNumberInput.value.replace(/\s/g, '');
+        const expiry = expiryInput.value;
+        const cvv = cvvInput.value;
+        const pin = pinInput.value;
+        const confirmPin = confirmPinInput.value;
+        
+        if (cardNumber.length !== 16) {
+            e.preventDefault();
+            alert('Please enter a valid 16-digit card number');
+            return;
+        }
+        
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+            e.preventDefault();
+            alert('Please enter a valid expiry date (MM/YY)');
+            return;
+        }
+        
+        if (cvv.length !== 3) {
+            e.preventDefault();
+            alert('Please enter a valid 3-digit CVV');
+            return;
+        }
+        
+        if (pin.length !== 4) {
+            e.preventDefault();
+            alert('Please enter a valid 4-digit PIN');
+            return;
+        }
+        
+        if (pin !== confirmPin) {
+            e.preventDefault();
+            alert('PINs do not match');
+            return;
+        }
+        
+        // Show processing message
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing Payment...';
+    });
+});
+</script>
+
+<%- include('./partials/footer') %>

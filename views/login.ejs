@@ -1,0 +1,65 @@
+<%- include('./partials/header') %>
+
+<% if(error && error.length > 0){ %>
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-red-500 shadow-lg animate-fade-in">
+        <span class="inline-block text-white font-medium">
+            <%= Array.isArray(error) ? error[0] : error %>
+        </span>
+    </div>
+<% } %>
+
+<div class="flex-grow flex items-center justify-center px-4 py-12 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(183, 110, 121, 0.1) 0%, rgba(30, 30, 30, 0.05) 100%), url('https://images.unsplash.com/photo-1445205170230-053b83016050?w=1920') center/cover;">
+    <div class="absolute inset-0" style="background-color: rgba(30, 30, 30, 0.3);"></div>
+    <div class="relative z-10 w-full max-w-md">
+        <div class="rounded-2xl shadow-2xl p-8 md:p-12 backdrop-blur-sm" style="background-color: #FAFAFA;">
+            <div class="text-center mb-8">
+                <h2 class="text-4xl font-bold mb-2 brand-font" style="color: #B76E79;">
+                    URBAN ÉLITE
+                </h2>
+                <h3 class="text-2xl font-semibold mb-2" style="color: #1E1E1E;">Welcome Back</h3>
+                <p style="color: #666;">Login to your account</p>
+            </div>
+            <form autocomplete="off" action="/users/login" method="post" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium mb-2" style="color: #1E1E1E;">Email</label>
+                    <input
+                        class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none focus:ring-2"
+                        style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;"
+                        onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'"
+                        onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'"
+                        type="email" 
+                        placeholder="john@example.com" 
+                        name="email"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2" style="color: #1E1E1E;">Password</label>
+                    <input
+                        class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none focus:ring-2"
+                        style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;"
+                        onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'"
+                        onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'"
+                        type="password" 
+                        placeholder="Enter your password" 
+                        name="password"
+                        required>
+                </div>
+                <button 
+                    type="submit"
+                    class="w-full px-5 py-3 rounded-lg text-white font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    style="background-color: #B76E79;"
+                    onmouseover="this.style.backgroundColor='#A05A66'"
+                    onmouseout="this.style.backgroundColor='#B76E79'">
+                    Login
+                </button>
+            </form>
+            <div class="mt-6 text-center">
+                <p style="color: #666;">Don't have an account? 
+                    <a href="/users/register" class="font-semibold transition-colors" style="color: #B76E79;" onmouseover="this.style.color='#A05A66'" onmouseout="this.style.color='#B76E79'">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('./partials/footer') %>

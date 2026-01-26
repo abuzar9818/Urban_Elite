@@ -1,0 +1,266 @@
+<%- include('./partials/header') %>
+
+<div class="container mx-auto px-4 md:px-8 py-10 flex-grow" style="background-color: #FAFAFA;">
+
+    <h1 class="text-3xl font-bold mb-10" style="color: #1E1E1E;">
+        Shopping Cart
+    </h1>
+
+    <% if(!user || !user.cart || user.cart.length === 0) { %>
+
+        <!-- Empty Cart -->
+        <div class="text-center py-16">
+            <i class="ri-shopping-cart-line text-7xl mb-6" style="color: #999;"></i>
+            <p class="text-xl mb-6" style="color: #666;">Your cart is empty</p>
+
+            <a href="/shop"
+                class="inline-block px-8 py-3 rounded-xl text-white font-semibold shadow-md transition-all"
+                style="background-color: #B76E79;"
+                onmouseover="this.style.backgroundColor='#A05A66'"
+                onmouseout="this.style.backgroundColor='#B76E79'">
+
+                Shop Now
+            </a>
+        </div>
+
+    <% } else { %>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+        <!-- ✅ Cart Items -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <% user.cart.forEach(function(item){ %>
+
+            <div class="rounded-2xl shadow-md p-6 flex flex-col md:flex-row gap-6 bg-white border transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                 style="border-color:#E5E5E5;">
+
+                <!-- ✅ Product Image -->
+                <div
+                    class="w-full md:w-44 h-44 flex items-center justify-center rounded-xl overflow-hidden border"
+                    style="background-color: <%= item.bgcolor || '#F3F4F6' %>;"
+                >
+                    <% if(item.image){ %>
+                        <img
+                            src="<%= item.image %>"
+                            class="h-full w-auto object-contain"
+                            alt="<%= item.name %>"
+                        >
+                    <% } else { %>
+                        <p class="text-gray-400">No Image</p>
+                    <% } %>
+                </div>
+
+                <!-- ✅ Product Info -->
+                <div class="flex-1">
+
+                    <h3 class="text-2xl font-semibold mb-2" style="color:#1E1E1E;">
+                        <%= item.name %>
+                    </h3>
+
+                    <p class="mb-4 text-gray-600">
+                        <%= item.description || "Premium quality product from URBAN ÉLITE collection." %>
+                    </p>
+
+                    <!-- Price -->
+                    <div class="flex items-center justify-between">
+
+                        <div>
+                            <p class="text-xl font-bold" style="color:#1E1E1E;">
+                                ₹ <%= item.price %>
+                            </p>
+
+                            <% if(item.discount && item.discount > 0){ %>
+                                <p class="text-sm font-medium" style="color:#B76E79;">
+                                    Save ₹<%= item.discount %>
+                                </p>
+                            <% } %>
+                        </div>
+
+                        <!-- Remove Button -->
+                        <a href="/removefromcart/<%= item._id %>"
+                            class="px-5 py-2 rounded-xl text-white font-medium shadow-md transition-all duration-300 btn-primary"
+                            style="background-color:#B76E79;"
+                            onmouseover="this.style.backgroundColor='#A05A66'"
+                            onmouseout="this.style.backgroundColor='#B76E79'">
+
+                            Remove
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+
+            <% }) %>
+
+        </div>
+
+
+        <!-- ✅ Order Summary -->
+        <div class="lg:col-span-1">
+
+            <div class="rounded-2xl shadow-md p-7 sticky top-20 bg-white border transition-all duration-300 hover:shadow-lg"
+                 style="border-color:#E5E5E5;">
+
+                <h3 class="text-2xl font-bold mb-8" style="color:#1E1E1E;">
+                    Order Summary
+                </h3>
+
+
+                <!-- ✅ Premium Coupon Section -->
+                <div class="mb-8 p-6 rounded-2xl border shadow-sm flex flex-wrap"
+                     style="background: #ffffff; border-color: #E5E5E5;">
+
+                    <h4 class="text-lg font-semibold mb-4 flex items-center gap-2"
+                        style="color:#1E1E1E;">
+                        <i class="ri-coupon-3-line text-xl" style="color:#B76E79;"></i>
+                        Have a Coupon Code?
+                    </h4>
+
+                    <form id="couponForm" action="/apply-coupon" method="POST"
+                          class="flex gap-2">
+
+                        <input
+                            type="text"
+                            name="couponCode"
+                            placeholder="Enter code (e.g. URBAN10)"
+                            class="flex-1 px-1 py-3 rounded-xl border focus:outline-none"
+                            style="
+                                border-color:#ddd;
+                                background:#FAFAFA;
+                                font-size:13px;
+                            "
+                        />
+
+                        <button
+                            type="submit"
+                            class="px-3 py-3 rounded-xl text-white font-semibold shadow-md transition-all duration-300 btn-primary"
+                            style="background-color:#B76E79; transition:0.3s;"
+                            onmouseover="this.style.backgroundColor='#A05A66'"
+                            onmouseout="this.style.backgroundColor='#B76E79'">
+
+                            Apply
+                        </button>
+                    </form>
+
+                    <div id="couponMessage"
+                        class="mt-4 px-4 py-3 rounded-xl text-sm font-semibold"
+                        style="display:none;">
+                    </div>
+                </div>
+
+
+                <!-- ✅ Price Summary -->
+                <div class="space-y-4 mb-8">
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span class="font-medium">₹ <span id="subtotal"><%= bill - 20 %></span></span>
+                    </div>
+
+                    <div class="flex justify-between" id="discountRow" style="display:none;">
+                        <span class="text-gray-600">Discount</span>
+                        <span style="color:#B76E79;">- ₹ <span id="discountAmount">0</span></span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Platform Fee</span>
+                        <span class="font-medium">₹ 20</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Shipping</span>
+                        <span class="font-semibold" style="color:#B76E79;">FREE</span>
+                    </div>
+
+                    <hr style="border-color:#E5E5E5;">
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-semibold">Total</span>
+                        <span class="text-2xl font-bold" style="color:#B76E79;">
+                            ₹ <span id="finalTotal"><%= bill %></span>
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <!-- Checkout Button -->
+                <a href="/checkout"
+                    class="block w-full text-center px-6 py-3 rounded-xl text-white font-semibold shadow-md transition-all duration-300 btn-primary"
+                    style="background-color:#B76E79;"
+                    onmouseover="this.style.backgroundColor='#A05A66'"
+                    onmouseout="this.style.backgroundColor='#B76E79'">
+
+                    Proceed to Checkout
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <% } %>
+</div>
+
+
+<!-- ✅ Coupon JavaScript -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const couponForm = document.getElementById("couponForm");
+    const couponMessage = document.getElementById("couponMessage");
+
+    if (couponForm) {
+        couponForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const couponCode = couponForm.couponCode.value.trim();
+
+            if (!couponCode) {
+                couponMessage.style.display = "block";
+                couponMessage.style.backgroundColor = "#FDEAEA";
+                couponMessage.style.color = "#B02A2A";
+                couponMessage.textContent = "Please enter a coupon code.";
+                return;
+            }
+
+            try {
+                const response = await fetch("/apply-coupon", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ couponCode })
+                });
+
+                const result = await response.json();
+
+                couponMessage.style.display = "block";
+
+                if (result.success) {
+                    couponMessage.style.backgroundColor = "#E7F9ED";
+                    couponMessage.style.color = "#1E7B42";
+                    couponMessage.textContent = result.message;
+
+                    document.getElementById("discountAmount").textContent = result.discount;
+                    document.getElementById("discountRow").style.display = "flex";
+                    document.getElementById("finalTotal").textContent = result.newTotal;
+                } else {
+                    couponMessage.style.backgroundColor = "#FDEAEA";
+                    couponMessage.style.color = "#B02A2A";
+                    couponMessage.textContent = result.message;
+
+                    document.getElementById("discountRow").style.display = "none";
+                }
+
+            } catch (error) {
+                couponMessage.style.display = "block";
+                couponMessage.style.backgroundColor = "#FDEAEA";
+                couponMessage.style.color = "#B02A2A";
+                couponMessage.textContent = "Something went wrong. Try again.";
+                console.log(error);
+            }
+        });
+    }
+});
+</script>
+
+<%- include('./partials/footer') %>

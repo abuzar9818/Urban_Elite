@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URBAN ÉLITE - Premium Fashion & Lifestyle</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        :root {
+            --soft-white: #FAFAFA;
+            --charcoal-grey: #1E1E1E;
+            --rose-gold: #B76E79;
+            --rose-gold-dark: #A05A66;
+            --rose-gold-darker: #8A4A56;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--soft-white);
+            scroll-behavior: smooth;
+        }
+        .brand-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Enhanced hover effects */
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: var(--rose-gold);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        /* Smooth button transitions */
+        .btn-primary {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(183, 110, 121, 0.3);
+        }
+        /* Card hover effects */
+        .product-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Smooth fade transitions */
+        .fade-transition {
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        /* Global animations */
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Enhanced scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #B76E79;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A05A66;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col" style="background-color: #FAFAFA;">
+    <script>
+        // Auto-hide flash messages after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.animate-fade-in');
+            flashMessages.forEach(function(msg) {
+                setTimeout(function() {
+                    msg.style.opacity = '0';
+                    msg.style.transition = 'opacity 0.5s ease-out';
+                    setTimeout(function() {
+                        msg.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+    </script>
+    
+    <nav class="w-full shadow-lg sticky top-0 z-50 border-b" style="background-color: #FAFAFA; border-color: #E5E5E5;">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex justify-between items-center py-4">
+                <a href="/" class="text-2xl font-bold hover:opacity-80 transition-opacity whitespace-nowrap">
+                    <span class="brand-font" style="color: #B76E79;">
+                        URBAN ÉLITE
+                    </span>
+                </a>
+                <% var loggedin = typeof loggedin != "undefined" ? loggedin : true %>
+                <% var isAdmin = typeof isAdmin != "undefined" ? isAdmin : false %>
+                <% if(loggedin && isAdmin){ %>
+                    <!-- Admin Navigation -->
+                    <div class="flex items-center gap-4 md:gap-6">
+                        <a href="/owners/admin" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-dashboard-line"></i>
+                            <span class="hidden md:inline">Dashboard</span>
+                        </a>
+                        <a href="/owners/sales" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-line-chart-line"></i>
+                            <span class="hidden md:inline">Sales</span>
+                        </a>
+                        <a href="/owners/create-product" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-add-circle-line"></i>
+                            <span class="hidden md:inline">Add Product</span>
+                        </a>
+                        <a href="/owners/logout" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #B76E79;" onmouseover="this.style.color='#A05A66'" onmouseout="this.style.color='#B76E79'">
+                            <i class="ri-logout-box-line"></i>
+                            <span class="hidden md:inline">Logout</span>
+                        </a>
+                    </div>
+                <% } else if(loggedin){ %>
+                    <!-- User Navigation -->
+                    <div class="flex items-center gap-4 md:gap-6 ml-auto">
+                        <div class="max-w-xs md:max-w-md">
+                            <form action="/search" method="GET" class="flex">
+                                <input 
+                                    type="text" 
+                                    name="q" 
+                                    placeholder="Search products..." 
+                                    class="px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-300 w-full"
+                                    style="background-color: #fff;"
+                                >
+                                <button 
+                                    type="submit" 
+                                    class="px-3 py-2 rounded-r-lg text-white transition-colors" 
+                                    style="background-color: #B76E79;" 
+                                    onmouseover="this.style.backgroundColor='#A05A66'" 
+                                    onmouseout="this.style.backgroundColor='#B76E79'">
+                                    <i class="ri-search-line"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <a href="/home" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-home-4-line"></i>
+                            <span class="hidden md:inline">Home</span>
+                        </a>
+                        <a href="/shop" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-store-2-line"></i>
+                            <span class="hidden md:inline">Shop</span>
+                        </a>
+                        <a href="/cart" class="nav-link transition-colors font-medium flex items-center gap-2 relative text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-shopping-cart-line text-xl"></i>
+                            <span class="hidden md:inline">Cart</span>
+                            <% if(user && user.cart && user.cart.length > 0) { %>
+                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="background-color: #B76E79;">
+                                    <%= user.cart.length %>
+                                </span>
+                            <% } %>
+                        </a>
+                        <a href="/my-account" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-user-line"></i>
+                            <span class="hidden md:inline">My Account</span>
+                        </a>
+                        <a href="/wishlist" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base relative" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">
+                            <i class="ri-heart-line text-xl"></i>
+                            <span class="hidden md:inline">Wishlist</span>
+                            <% if(user && user.wishlist && user.wishlist.length > 0) { %>
+                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="background-color: #B76E79;">
+                                    <%= user.wishlist.length %>
+                                </span>
+                            <% } %>
+                        </a>
+                        <a href="/logout" class="nav-link transition-colors font-medium flex items-center gap-2 text-sm md:text-base" style="color: #B76E79;" onmouseover="this.style.color='#A05A66'" onmouseout="this.style.color='#B76E79'">
+                            <i class="ri-logout-box-line"></i>
+                            <span class="hidden md:inline">Logout</span>
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="flex items-center gap-4">
+                        <a href="/" class="transition-colors font-medium text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">Home</a>
+                        <a href="/users/register" class="transition-colors font-medium text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">Register</a>
+                        <a href="/users/login" class="transition-colors font-medium text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">Login</a>
+                        <a href="/owners/login" class="transition-colors font-medium text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">Admin</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </nav>

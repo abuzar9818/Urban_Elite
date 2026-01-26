@@ -1,0 +1,150 @@
+<%- include('./partials/header', { isAdmin: true }) %>
+
+<div class="container mx-auto px-4 md:px-8 py-8 flex-grow" style="background-color: #FAFAFA;">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold" style="color: #1E1E1E;">Admin Orders</h1>
+        <a href="/owners/admin" class="px-4 py-2 rounded-lg text-white transition-colors" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+            Back to Dashboard
+        </a>
+    </div>
+    
+    <% if(!orders || orders.length === 0) { %>
+        <div class="text-center py-12">
+            <i class="ri-package-line text-6xl mb-4" style="color: #999;"></i>
+            <p class="text-xl mb-4" style="color: #666;">No orders found</p>
+        </div>
+    <% } else { %>
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Order ID
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Customer
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Items
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Total
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <% orders.forEach(function(order, index){ %>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        <%= order.id || 'ORD' + (index + 1) %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        <%= order.customerName %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">
+                                        <% if(order.items && order.items.length > 0) { %>
+                                            <% order.items.slice(0, 2).forEach(function(item, idx){ %>
+                                                <div><%= item.name %></div>
+                                            <% }) %>
+                                            <% if(order.items.length > 2) { %>
+                                                <div class="text-gray-500">+ <%= order.items.length - 2 %> more items</div>
+                                            <% } %>
+                                        <% } else { %>
+                                            <div class="text-gray-500">No items</div>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 font-semibold">
+                                        ₹<%= order.total || 0 %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        <%= new Date(order.date || new Date()).toLocaleDateString() %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <%= order.status || 'Completed' %>
+                                    </span>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Order Statistics -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                        <i class="ri-shopping-cart-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Total Orders</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= orders.length %></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                        <i class="ri-money-dollar-circle-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Total Revenue</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            ₹<%= orders.reduce((sum, order) => sum + (order.total || 0), 0) %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
+                        <i class="ri-calendar-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Today's Orders</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            <%= orders.filter(order => new Date(order.date).toDateString() === new Date().toDateString()).length %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-orange-100 text-orange-600 mr-4">
+                        <i class="ri-timer-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Avg Order Value</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            ₹<%= orders.length > 0 ? Math.floor(orders.reduce((sum, order) => sum + (order.total || 0), 0) / orders.length) : 0 %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<%- include('./partials/footer') %>

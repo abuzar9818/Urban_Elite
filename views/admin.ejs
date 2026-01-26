@@ -1,0 +1,309 @@
+<%- include('./partials/header', { isAdmin: true }) %>
+
+<!-- ✅ Success Message -->
+<% if(success && success.length>0){ %>
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-green-500 shadow-lg animate-fade-in">
+        <span class="inline-block text-white font-medium">
+            <%= Array.isArray(success) ? success[0] : success %>
+        </span>
+    </div>
+<% } %>
+
+<!-- ✅ Error Message -->
+<% if(error && error.length>0){ %>
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-red-500 shadow-lg animate-fade-in">
+        <span class="inline-block text-white font-medium">
+            <%= Array.isArray(error) ? error[0] : error %>
+        </span>
+    </div>
+<% } %>
+
+<div class="container mx-auto px-4 md:px-8 py-10 flex-grow" style="background-color: #FAFAFA;">
+
+    <!-- ✅ Sales Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+
+        <!-- Card 1 -->
+        <div class="rounded-xl shadow-md p-6 border" style="background:#fff; border-color:#E5E5E5;">
+            <p class="text-sm mb-1 text-gray-500">Today's Sales</p>
+            <h3 class="text-2xl font-bold text-gray-900">
+                ₹<%= salesData.todaySales.toLocaleString() %>
+            </h3>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="rounded-xl shadow-md p-6 border" style="background:#fff; border-color:#E5E5E5;">
+            <p class="text-sm mb-1 text-gray-500">This Week</p>
+            <h3 class="text-2xl font-bold text-gray-900">
+                ₹<%= salesData.weekSales.toLocaleString() %>
+            </h3>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="rounded-xl shadow-md p-6 border" style="background:#fff; border-color:#E5E5E5;">
+            <p class="text-sm mb-1 text-gray-500">This Month</p>
+            <h3 class="text-2xl font-bold text-gray-900">
+                ₹<%= salesData.monthSales.toLocaleString() %>
+            </h3>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="rounded-xl shadow-md p-6 border" style="background:#fff; border-color:#E5E5E5;">
+            <p class="text-sm mb-1 text-gray-500">Total Orders</p>
+            <h3 class="text-2xl font-bold text-gray-900">
+                <%= salesData.totalOrders %>
+            </h3>
+        </div>
+
+    </div>
+
+    <!-- ✅ Low Stock Alerts -->
+    <% 
+        const lowStockProducts = products.filter(product => product.stock <= 5 && product.stock > 0);
+        const outOfStockProducts = products.filter(product => product.stock <= 0);
+    %>
+    
+    <% if(lowStockProducts.length > 0 || outOfStockProducts.length > 0) { %>
+        <div class="mb-8">
+            <div class="rounded-xl shadow-md p-6" style="background:#fff; border:1px solid #E5E5E5;">
+                <h2 class="text-xl font-bold mb-4" style="color:#1E1E1E;">Inventory Alerts</h2>
+                
+                <% if(outOfStockProducts.length > 0) { %>
+                    <div class="mb-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="ri-error-warning-line text-red-500 text-xl"></i>
+                            <h3 class="font-semibold text-red-600">Out of Stock (<%= outOfStockProducts.length %> products)</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <% outOfStockProducts.slice(0, 6).forEach(function(product){ %>
+                                <div class="flex items-center gap-3 p-3 rounded-lg border" style="border-color:#fecaca; background-color:#fef2f2;">
+                                    <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color:<%= product.bgcolor || '#f3f4f6' %>;"></div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm truncate"><%= product.name %></p>
+                                        <p class="text-xs text-red-600 font-semibold">OUT OF STOCK</p>
+                                    </div>
+                                    <a href="/owners/edit-product/<%= product._id %>" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200 transition-colors">Restock</a>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <% if(outOfStockProducts.length > 6) { %>
+                            <p class="text-sm text-gray-600 mt-2">+ <%= outOfStockProducts.length - 6 %> more out of stock products</p>
+                        <% } %>
+                    </div>
+                <% } %>
+                
+                <% if(lowStockProducts.length > 0) { %>
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="ri-alert-line text-orange-500 text-xl"></i>
+                            <h3 class="font-semibold text-orange-600">Low Stock (<%= lowStockProducts.length %> products)</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <% lowStockProducts.slice(0, 6).forEach(function(product){ %>
+                                <div class="flex items-center gap-3 p-3 rounded-lg border" style="border-color:#fed7aa; background-color:#fff7ed;">
+                                    <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color:<%= product.bgcolor || '#f3f4f6' %>;"></div>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-sm truncate"><%= product.name %></p>
+                                        <p class="text-xs text-orange-600 font-semibold"><%= product.stock %> units left</p>
+                                    </div>
+                                    <a href="/owners/edit-product/<%= product._id %>" class="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700 hover:bg-orange-200 transition-colors">Restock</a>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <% if(lowStockProducts.length > 6) { %>
+                            <p class="text-sm text-gray-600 mt-2">+ <%= lowStockProducts.length - 6 %> more low stock products</p>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- ✅ Quick Links Section -->
+    <div class="mb-8">
+        <div class="rounded-xl shadow-md p-6" style="background:#fff; border:1px solid #E5E5E5;">
+            <h2 class="text-xl font-bold mb-4" style="color:#1E1E1E;">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <a href="/owners/orders" class="flex items-center gap-3 p-4 rounded-lg border hover:shadow-md transition-shadow" style="border-color:#E5E5E5;">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="ri-shopping-cart-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">View All Orders</p>
+                        <p class="text-sm text-gray-600">Manage customer orders</p>
+                    </div>
+                </a>
+                <a href="/owners/reviews" class="flex items-center gap-3 p-4 rounded-lg border hover:shadow-md transition-shadow" style="border-color:#E5E5E5;">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="ri-star-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Product Reviews</p>
+                        <p class="text-sm text-gray-600">View customer reviews</p>
+                    </div>
+                </a>
+                <a href="/owners/sales" class="flex items-center gap-3 p-4 rounded-lg border hover:shadow-md transition-shadow" style="border-color:#E5E5E5;">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="ri-bar-chart-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Sales Analytics</p>
+                        <p class="text-sm text-gray-600">View sales reports</p>
+                    </div>
+                </a>
+                <a href="/owners/create-product" class="flex items-center gap-3 p-4 rounded-lg border hover:shadow-md transition-shadow" style="border-color:#E5E5E5;">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="ri-add-line text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Add New Product</p>
+                        <p class="text-sm text-gray-600">Create new products</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Products Section -->
+    <div class="mb-8">
+
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">
+                All Products
+            </h2>
+
+            <span class="text-gray-500">
+                Total: <%= products.length %> products
+            </span>
+        </div>
+
+
+        <!-- ✅ No Products -->
+        <% if(products.length === 0){ %>
+
+            <div class="rounded-xl shadow-md p-12 text-center bg-white border" style="border-color:#E5E5E5;">
+                <i class="ri-inbox-line text-6xl mb-4 text-gray-400"></i>
+                <p class="text-lg text-gray-600 mb-6">
+                    No products found. Create your first product!
+                </p>
+
+                <a href="/owners/create-product"
+                   class="inline-block px-6 py-3 rounded-xl text-white font-semibold shadow-md"
+                   style="background-color:#B76E79;"
+                   onmouseover="this.style.backgroundColor='#A05A66'"
+                   onmouseout="this.style.backgroundColor='#B76E79'">
+                    Create Product
+                </a>
+            </div>
+
+        <% } else { %>
+
+
+        <!-- ✅ Products Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <% products.forEach(function(product){ %>
+
+                <div class="rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border"
+                     style="background:#fff; border-color:#E5E5E5;">
+
+                    <!-- ✅ Product Image -->
+                    <div class="w-full h-52 flex justify-center items-center"
+                         style="background-color:<%= product.bgcolor || '#F3F4F6' %>">
+                        
+                        <% if(product.image){ %>
+                            <img 
+                                class="h-[12rem] w-auto object-contain"
+                                src="<%= product.image %>"
+                                alt="<%= product.name %>"
+                            >
+                        <% } else { %>
+                            <p class="text-gray-400">No Image</p>
+                        <% } %>
+                    </div>
+
+                    <!-- ✅ Product Info -->
+                    <div class="flex justify-between items-center px-5 py-5"
+                         style="
+                            background-color:<%= product.panelcolor || '#FFFFFF' %>;
+                            color:<%= product.textcolor || '#1E1E1E' %>;
+                         ">
+
+                        <!-- Details -->
+                        <div>
+                            <h3 class="font-semibold text-lg">
+                                <%= product.name %>
+                            </h3>
+
+                            <p class="text-gray-600 font-medium">
+                                ₹ <%= product.price %>
+                            </p>
+
+                            <% if(product.discount && product.discount > 0){ %>
+                                <span class="text-sm font-semibold" style="color:#B76E79;">
+                                    Discount: ₹<%= product.discount %>
+                                </span>
+                            <% } %>
+                        </div>
+
+                        <!-- ✅ Action Buttons -->
+                        <div class="flex gap-2">
+                            <a 
+                                href="/owners/edit-product/<%= product._id %>" 
+                                class="px-4 py-2 rounded-xl text-white text-sm shadow-md transition-colors"
+                                style="background-color:#007bff;"
+                                onmouseover="this.style.backgroundColor='#0056b3'"
+                                onmouseout="this.style.backgroundColor='#007bff'">
+                                Edit
+                            </a>
+                            <button 
+                                onclick="deleteProduct('<%= product._id %>')" 
+                                class="px-4 py-2 rounded-xl text-white text-sm shadow-md transition-colors"
+                                style="background-color:#dc3545;"
+                                onmouseover="this.style.backgroundColor='#c82333'"
+                                onmouseout="this.style.backgroundColor='#dc3545'">
+                                Delete
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            <% }) %>
+
+        </div>
+        <% } %>
+
+    </div>
+</div>
+
+
+<!-- ✅ Delete Product Script -->
+<script>
+async function deleteProduct(productId) {
+    if (confirm("Are you sure you want to delete this product?")) {
+
+        try {
+            const response = await fetch(`/owners/delete-product/${productId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert("✅ Product deleted successfully!");
+                location.reload();
+            } else {
+                alert("❌ " + result.message);
+            }
+
+        } catch (error) {
+            console.error("Delete Error:", error);
+            alert("Something went wrong while deleting.");
+        }
+    }
+}
+</script>
+
+<%- include('./partials/footer') %>

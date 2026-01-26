@@ -1,0 +1,77 @@
+<%- include('./partials/header') %>
+
+<% if(success && success.length>0){ %>
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-green-500 shadow-lg animate-fade-in">
+        <span class="inline-block text-white font-medium">
+            <%= Array.isArray(success) ? success[0] : success %>
+        </span>
+    </div>
+<% } %>
+
+<% if(error && error.length>0){ %>
+    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-red-500 shadow-lg animate-fade-in">
+        <span class="inline-block text-white font-medium">
+            <%= Array.isArray(error) ? error[0] : error %>
+        </span>
+    </div>
+<% } %>
+
+<div class="container mx-auto px-4 md:px-8 py-12 flex-grow" style="background-color: #FAFAFA;">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-8 text-center brand-font" style="color: #1E1E1E;">Contact Us</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="rounded-lg shadow-md p-8" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+                <h2 class="text-2xl font-semibold mb-6" style="color: #B76E79;">Get In Touch</h2>
+                <form action="/contact" method="post" class="space-y-4">
+                    <div>
+                        <label class="block mb-2 font-medium" style="color: #1E1E1E;">Your Name</label>
+                        <input type="text" name="name" required class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-medium" style="color: #1E1E1E;">Your Email</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-medium" style="color: #1E1E1E;">Message</label>
+                        <textarea name="message" rows="5" required class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'"></textarea>
+                    </div>
+                    <button type="submit" class="w-full px-6 py-3 rounded-lg text-white font-semibold transition-colors" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+                    <h3 class="text-xl font-semibold mb-4" style="color: #1E1E1E;">Contact Information</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <i class="ri-mail-line text-xl mt-1" style="color: #B76E79;"></i>
+                            <div>
+                                <p class="font-medium" style="color: #1E1E1E;">Email</p>
+                                <p style="color: #666;">support@urbanelite.com</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="ri-phone-line text-xl mt-1" style="color: #B76E79;"></i>
+                            <div>
+                                <p class="font-medium" style="color: #1E1E1E;">Phone</p>
+                                <p style="color: #666;">+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <i class="ri-map-pin-line text-xl mt-1" style="color: #B76E79;"></i>
+                            <div>
+                                <p class="font-medium" style="color: #1E1E1E;">Address</p>
+                                <p style="color: #666;">123 Fashion Street<br>New York, NY 10001</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('./partials/footer') %>

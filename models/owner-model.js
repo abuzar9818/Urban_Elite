@@ -8,8 +8,7 @@ const ownerSchema =  mongoose.Schema({
     },
     email:String,
     password:String,
-    isadmin:Boolean,
-    orders:{
+    products:{
         type:Array,
         default:[]
     },

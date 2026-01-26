@@ -1,16 +1,29 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const productSchema =  mongoose.Schema({
-    name:String,
-    price:Number,
-    image:String,
-    discount:{
-        type:Number,
-        default:0
+const productSchema = mongoose.Schema(
+  {
+    name: { type: String, required: true },
+
+    description: {
+      type: String,
+      default: "Premium quality product from URBAN ÉLITE collection.",
     },
-    bgcolor: String,
-    panelcolor: String,
-    textcolor: String
-});
 
-module.exports = mongoose.model('product', productSchema);
+    price: { type: Number, required: true },
+
+    discount: { type: Number, default: 0 },
+
+    image: { type: String, required: true },
+
+    bgcolor: { type: String, default: "#ffffff" },
+    panelcolor: { type: String, default: "#f3f4f6" },
+    textcolor: { type: String, default: "#000000" },
+
+    category: { type: String, default: "General" },
+
+    stock: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("product", productSchema);

@@ -1,0 +1,71 @@
+<%- include('./partials/header') %>
+
+<div class="container mx-auto px-4 md:px-8 py-8 md:py-12 flex-grow" style="background-color: #FAFAFA;">
+    <h1 class="text-3xl font-bold mb-8" style="color: #1E1E1E;">My Orders</h1>
+    
+    <% if(!user.orders || user.orders.length === 0) { %>
+        <div class="text-center py-12">
+            <i class="ri-package-line text-6xl mb-4" style="color: #999;"></i>
+            <p class="text-xl mb-4" style="color: #666;">You haven't placed any orders yet</p>
+            <a href="/shop" class="inline-block px-6 py-3 rounded-lg text-white transition-colors" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+                Start Shopping
+            </a>
+        </div>
+    <% } else { %>
+        <div class="space-y-6">
+            <% user.orders.forEach(function(order, index){ %>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold" style="color: #1E1E1E;">Order #<%= order.id || (index + 1) %></h3>
+                            <p class="text-sm" style="color: #666;"><%= order.date || new Date().toLocaleDateString() %></p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold" style="background-color: #d4edda; color: #155724;">
+                            <% if(order.status) { %>
+                                <%= order.status %>
+                            <% } else { %>
+                                Completed
+                            <% } %>
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <% if(order.items && order.items.length > 0) { %>
+                            <% order.items.forEach(function(item){ %>
+                                <div class="flex items-center gap-4">
+                                    <% if(item.image) { %>
+                                        <img src="<%= item.image %>" alt="<%= item.name %>" class="w-16 h-16 object-contain" style="background-color: <%= item.bgcolor || '#FAFAFA' %>;">
+                                    <% } else { %>
+                                        <div class="w-16 h-16 flex items-center justify-center" style="background-color: #FAFAFA;">
+                                            <i class="ri-image-line text-gray-400"></i>
+                                        </div>
+                                    <% } %>
+                                    <div>
+                                        <h4 class="font-medium" style="color: #1E1E1E;"><%= item.name %></h4>
+                                        <p style="color: #666;">Qty: <%= item.quantity || 1 %> × ₹<%= item.price %></p>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <p>No items in this order</p>
+                        <% } %>
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-4 border-t" style="border-color: #E5E5E5;">
+                        <p class="font-semibold" style="color: #1E1E1E;">Total: ₹<%= order.total || 0 %></p>
+                        <div class="flex gap-2">
+                            <button class="px-4 py-2 rounded-lg text-white text-sm transition-colors" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+                                Track Order
+                            </button>
+                            <button class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm transition-colors" onmouseover="this.style.borderColor='#B76E79'; this.style.color='#B76E79';" onmouseout="this.style.borderColor='#d1d5db'; this.style.color='#374151';">
+                                Reorder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>
+
+<%- include('./partials/footer') %>

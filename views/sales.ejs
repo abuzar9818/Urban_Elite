@@ -1,0 +1,171 @@
+<%- include('./partials/header', { isAdmin: true }) %>
+
+<div class="container mx-auto px-4 md:px-8 py-8 flex-grow" style="background-color: #FAFAFA;">
+    <h1 class="text-3xl font-bold mb-8" style="color: #1E1E1E;">Sales Dashboard</h1>
+    
+    <!-- Sales Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm mb-1" style="color: #666;">Today's Sales</p>
+                    <h3 class="text-2xl font-bold" style="color: #1E1E1E;">₹<%= salesData.todaySales.toLocaleString() %></h3>
+                </div>
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: #B76E79;">
+                    <i class="ri-money-rupee-circle-line text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm mb-1" style="color: #666;">This Week</p>
+                    <h3 class="text-2xl font-bold" style="color: #1E1E1E;">₹<%= salesData.weekSales.toLocaleString() %></h3>
+                </div>
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: #B76E79;">
+                    <i class="ri-line-chart-line text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm mb-1" style="color: #666;">This Month</p>
+                    <h3 class="text-2xl font-bold" style="color: #1E1E1E;">₹<%= salesData.monthSales.toLocaleString() %></h3>
+                </div>
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: #B76E79;">
+                    <i class="ri-bar-chart-box-line text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+        <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm mb-1" style="color: #666;">Total Orders</p>
+                    <h3 class="text-2xl font-bold" style="color: #1E1E1E;"><%= salesData.totalOrders %></h3>
+                </div>
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: #B76E79;">
+                    <i class="ri-shopping-bag-line text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Chart Section -->
+    <div class="rounded-lg shadow-md p-6 mb-8" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+        <h3 class="text-xl font-bold mb-6" style="color: #1E1E1E;">Sales Overview</h3>
+        <div class="h-64">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Additional Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+            <h3 class="text-lg font-semibold mb-4" style="color: #1E1E1E;">Today's Orders</h3>
+            <p class="text-3xl font-bold" style="color: #B76E79;"><%= salesData.todayOrders %></p>
+        </div>
+        <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+            <h3 class="text-lg font-semibold mb-4" style="color: #1E1E1E;">Average Order Value</h3>
+            <p class="text-3xl font-bold" style="color: #B76E79;">₹<%= salesData.avgOrderValue.toLocaleString() %></p>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="rounded-lg shadow-md p-6" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+        <h3 class="text-xl font-bold mb-6" style="color: #1E1E1E;">Recent Orders</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr style="border-bottom: 1px solid #E5E5E5;">
+                        <th class="text-left py-3 px-4" style="color: #1E1E1E;">Order ID</th>
+                        <th class="text-left py-3 px-4" style="color: #1E1E1E;">Customer</th>
+                        <th class="text-left py-3 px-4" style="color: #1E1E1E;">Amount</th>
+                        <th class="text-left py-3 px-4" style="color: #1E1E1E;">Date</th>
+                        <th class="text-left py-3 px-4" style="color: #1E1E1E;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% salesData.recentOrders.forEach(function(order){ %>
+                        <tr style="border-bottom: 1px solid #E5E5E5;">
+                            <td class="py-3 px-4" style="color: #666;"><%= order.orderId %></td>
+                            <td class="py-3 px-4" style="color: #666;"><%= order.customer %></td>
+                            <td class="py-3 px-4 font-semibold" style="color: #1E1E1E;">₹<%= order.amount.toLocaleString() %></td>
+                            <td class="py-3 px-4" style="color: #666;"><%= order.date %></td>
+                            <td class="py-3 px-4">
+                                <span class="px-3 py-1 rounded-full text-sm" style="background-color: <%= order.status === 'Completed' ? '#D4EDDA' : order.status === 'Pending' ? '#FFF3CD' : '#D1ECF1' %>;
+                                color: <%= order.status === 'Completed' ? '#155724' : order.status === 'Pending' ? '#856404' : '#0C5460' %>">
+                                    <%= order.status %>
+                                </span>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Sales Chart Data
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            
+            // Prepare sales data
+            const dailySalesData = [
+                <%= Math.floor(salesData.weekSales/7) %>, 
+                <%= Math.floor(salesData.weekSales/7 + 5000) %>, 
+                <%= Math.floor(salesData.weekSales/7 - 2000) %>, 
+                <%= Math.floor(salesData.weekSales/7 + 3000) %>, 
+                <%= Math.floor(salesData.weekSales/7 - 1000) %>, 
+                <%= Math.floor(salesData.weekSales/7 + 8000) %>, 
+                <%= Math.floor(salesData.weekSales/7 + 2000) %>
+            ];
+            
+            const config = {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Sales (₹)',
+                        data: dailySalesData,
+                        backgroundColor: 'rgba(183, 110, 121, 0.2)',
+                        borderColor: 'rgba(183, 110, 121, 1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Weekly Sales Trend'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            const salesChart = new Chart(ctx, config);
+        });
+    </script>
+    
+<%- include('./partials/footer') %>
