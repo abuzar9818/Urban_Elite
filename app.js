@@ -49,38 +49,54 @@ const couponModel = require('./models/coupon-model');
 
 async function createSampleCoupons() {
     try {
-        const couponCount = await couponModel.countDocuments();
-        if (couponCount === 0) {
-            // Create sample coupons
-            const sampleCoupons = [
-                {
-                    code: 'WELCOME10',
-                    discountType: 'percentage',
-                    discountValue: 10,
-                    minOrderAmount: 500,
-                    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-                    isActive: true
-                },
-                {
-                    code: 'SAVE200',
-                    discountType: 'fixed',
-                    discountValue: 200,
-                    minOrderAmount: 1000,
-                    expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
-                    isActive: true
-                },
-                {
-                    code: 'FREESHIP',
-                    discountType: 'fixed',
-                    discountValue: 20, // Covers platform fee
-                    minOrderAmount: 500,
-                    expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
-                    isActive: true
+        // Check for each specific coupon code instead of just counting
+        const couponCodes = ['WELCOME10', 'SAVE200', 'FREESHIP']; // Add any new coupon codes here
+        
+        for (const code of couponCodes) {
+            const existingCoupon = await couponModel.findOne({ code: code });
+            if (!existingCoupon) {
+                // Create the specific coupon if it doesn't exist
+                let newCoupon;
+                switch(code) {
+                    case 'WELCOME10':
+                        newCoupon = {
+                            code: 'WELCOME10',
+                            discountType: 'percentage',
+                            discountValue: 10,
+                            minOrderAmount: 500,
+                            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+                            isActive: true
+                        };
+                        break;
+                    case 'SAVE200':
+                        newCoupon = {
+                            code: 'SAVE200',
+                            discountType: 'fixed',
+                            discountValue: 200,
+                            minOrderAmount: 1000,
+                            expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
+                            isActive: true
+                        };
+                        break;
+                    case 'FREESHIP':
+                        newCoupon = {
+                            code: 'FREESHIP',
+                            discountType: 'fixed',
+                            discountValue: 20, // Covers platform fee
+                            minOrderAmount: 500,
+                            expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
+                            isActive: true
+                        };
+                        break;
+                    default:
+                        continue; // Skip unknown coupon codes
                 }
-            ];
-            
-            await couponModel.insertMany(sampleCoupons);
-            console.log('Sample coupons created successfully!');
+                
+                if (newCoupon) {
+                    await couponModel.create(newCoupon);
+                    console.log(`Coupon ${code} created successfully!`);
+                }
+            }
         }
     } catch (error) {
         console.error('Error creating sample coupons:', error);
@@ -89,6 +105,31 @@ async function createSampleCoupons() {
 
 // Run the function after connecting to the database
 setTimeout(createSampleCoupons, 2000);
+
+// Function to add NEWERA coupon if it doesn't exist
+async function addNewEraCoupon() {
+    try {
+        const existingCoupon = await couponModel.findOne({ code: 'NEWERA' });
+        if (!existingCoupon) {
+            const newCoupon = {
+                code: 'NEWERA',
+                discountType: 'fixed',
+                discountValue: 1000, // Covers platform fee
+                minOrderAmount: 8000,
+                expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
+                isActive: true
+            };
+            
+            await couponModel.create(newCoupon);
+            console.log('NEWERA coupon created successfully!');
+        }
+    } catch (error) {
+        console.error('Error creating NEWERA coupon:', error);
+    }
+}
+
+// Run the NEWERA coupon addition function
+setTimeout(addNewEraCoupon, 2500);
 
 const app = express();
 

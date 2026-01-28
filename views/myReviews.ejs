@@ -1,0 +1,72 @@
+<%- include('./partials/header') %>
+
+<div class="container mx-auto px-4 md:px-8 py-8 md:py-12 flex-grow" style="background-color: #FAFAFA;">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8" style="color: #1E1E1E;">My Reviews</h1>
+        
+        <% if(!userReviews || userReviews.length === 0) { %>
+            <div class="text-center py-12">
+                <i class="ri-star-line text-6xl mb-4" style="color: #999;"></i>
+                <p class="text-xl mb-4" style="color: #666;">You haven't submitted any reviews yet</p>
+                <a href="/shop" class="inline-block px-6 py-3 rounded-lg text-white transition-colors" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+                    Browse Products
+                </a>
+            </div>
+        <% } else { %>
+            <div class="space-y-6">
+                <% userReviews.forEach(function(review) { %>
+                    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900"><%= review.productId ? review.productId.name : 'Unknown Product' %></h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <% for(let i = 1; i <= 5; i++) { %>
+                                        <% if(i <= review.rating) { %>
+                                            <i class="ri-star-fill text-yellow-400"></i>
+                                        <% } else { %>
+                                            <i class="ri-star-line text-gray-300"></i>
+                                        <% } %>
+                                    <% } %>
+                                    <span class="ml-2 text-gray-600"><%= review.rating %>/5</span>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <%= new Date(review.date).toLocaleDateString() %>
+                            </div>
+                        </div>
+                        
+                        <h4 class="font-semibold text-gray-800 mb-2"><%= review.title %></h4>
+                        <p class="text-gray-700 mb-4"><%= review.comment %></p>
+                        
+                        <% if(review.productId) { %>
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <div class="flex items-center gap-3">
+                                    <% if(review.productId.image) { %>
+                                        <div class="w-12 h-12 rounded-lg overflow-hidden" style="background-color:<%= review.productId.bgcolor || '#f3f4f6' %>;">
+                                            <img src="<%= review.productId.image %>" alt="<%= review.productId.name %>" class="w-full h-full object-cover">
+                                        </div>
+                                    <% } else { %>
+                                        <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color:<%= review.productId.bgcolor || '#f3f4f6' %>;">
+                                            <i class="ri-image-line text-gray-400"></i>
+                                        </div>
+                                    <% } %>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">₹<%= review.productId.price %></p>
+                                        <% if(review.productId.discount && review.productId.discount > 0) { %>
+                                            <p class="text-xs text-green-600">Saved ₹<%= review.productId.discount %></p>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <a href="/product/<%= review.productId._id %>" class="px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+                                    View Product
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('./partials/footer') %>

@@ -2,8 +2,10 @@ const express = require("express");
 const isloggedin = require("../middleware/isLoggedIn");
 const productModel = require("../models/product-model");
 const userModel = require("../models/user-model");
+const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
+
 const { logout } = require("../controllers/authController");
-const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
@@ -32,28 +34,278 @@ router.get("/about", isloggedin, (req, res) => {
 });
 
 // Contact page
-router.get("/contact", isloggedin, (req, res) => {
+router.get("/contact", (req, res) => {
 	let success = req.flash("success");
 	let error = req.flash("error");
-	res.render("contact", { success, error, loggedin: true });
+	// Check if user is logged in
+	const loggedin = req.user ? true : false;
+	res.render("contact", { success, error, loggedin });
+});
+
+// Apply coupon
+router.post("/apply-coupon", isloggedin, async (req, res) => {
+	try {
+		const { couponCode } = req.body;
+		const user = await userModel.findOne({ email: req.user.email }).populate('cart');
+		
+		if (!couponCode) {
+			return res.json({
+				success: false,
+				message: "Please enter a coupon code"
+			});
+		}
+		
+		const Coupon = require('../models/coupon-model');
+		const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+		
+		if (!coupon) {
+			return res.json({
+				success: false,
+				message: "Invalid coupon code"
+			});
+		}
+		
+		// Check if coupon is expired
+		if (coupon.expiryDate < new Date()) {
+			return res.json({
+				success: false,
+				message: "Coupon has expired"
+			});
+		}
+		
+		// Check if usage limit reached
+		if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
+			return res.json({
+				success: false,
+				message: "Coupon usage limit reached"
+			});
+		}
+		
+		// Calculate total cart amount
+		let cartTotal = 0;
+		user.cart.forEach(item => {
+			cartTotal += Number(item.price || 0) + 20 - Number(item.discount || 0);
+		});
+		
+		// Check minimum order amount
+		if (cartTotal < coupon.minOrderAmount) {
+			return res.json({
+				success: false,
+				message: `Minimum order amount of ₹${coupon.minOrderAmount} required for this coupon`
+			});
+		}
+		
+		// Calculate discount
+		let discount = 0;
+		if (coupon.discountType === 'percentage') {
+			discount = (cartTotal * coupon.discountValue) / 100;
+			// Apply max discount limit if set
+			if (coupon.maxDiscountAmount > 0 && discount > coupon.maxDiscountAmount) {
+				discount = coupon.maxDiscountAmount;
+			}
+		} else {
+			// Fixed discount
+			discount = coupon.discountValue;
+			// Ensure discount doesn't exceed cart total
+			if (discount > cartTotal) {
+				discount = cartTotal;
+			}
+		}
+		
+		// Ensure discount doesn't exceed cart total
+		if (discount > cartTotal) {
+			discount = cartTotal;
+		}
+		
+		// Update coupon usage count
+		await Coupon.findByIdAndUpdate(coupon._id, { $inc: { usedCount: 1 } });
+		
+		// Add coupon info to session for checkout
+		req.session.appliedCoupon = {
+			code: coupon.code,
+			discount: discount,
+			type: coupon.discountType,
+			value: coupon.discountValue
+		};
+		
+		return res.json({
+			success: true,
+			message: `Coupon applied successfully! You saved ₹${discount.toFixed(2)}`,
+			discount: discount
+		});
+	} catch (error) {
+		console.error('Error applying coupon:', error);
+		return res.json({
+			success: false,
+			message: "An error occurred while applying the coupon"
+		});
+	}
+});
+
+// Remove coupon
+router.post("/remove-coupon", isloggedin, async (req, res) => {
+	try {
+		// Remove coupon from session
+		delete req.session.appliedCoupon;
+		
+		return res.json({
+			success: true,
+			message: "Coupon removed successfully"
+		});
+	} catch (error) {
+		console.error('Error removing coupon:', error);
+		return res.json({
+			success: false,
+			message: "An error occurred while removing the coupon"
+		});
+	}
 });
 
 // Contact form submission
-router.post("/contact", isloggedin, (req, res) => {
-	// Handle contact form submission
-	req.flash("success", "Thank you for your message! We'll get back to you soon.");
-	res.redirect("/contact");
+router.post("/contact", async (req, res) => {
+	try {
+		const { name, email, message } = req.body;
+		
+		// Validate input
+		if (!name || !email || !message) {
+			req.flash("error", "Please fill in all required fields");
+			return res.redirect("/contact");
+		}
+
+		// Send email notification to admin (no database storage)
+		// In a real application, you would send an email here
+		
+		req.flash("success", "Thank you for your message! We've received your inquiry and will get back to you soon.");
+		res.redirect("/contact");
+	} catch (error) {
+		console.error("Contact form error:", error);
+		req.flash("error", "An error occurred while processing your message. Please try again later.");
+		res.redirect("/contact");
+	}
+});
+
+
+
+// Shop filter route (POST)
+router.post("/shop/filter", isloggedin, async (req, res) => {
+	try {
+		let query = {};
+		let sort = {};
+		
+		const { category, filter, sortby } = req.body;
+		
+		// Handle category filter
+		if (category) {
+			if (category === 'new') {
+				query.createdAt = { $gte: new Date(Date.now() - 30*24*60*60*1000) };
+			} else if (category === 'discounted') {
+				query.discount = { $gt: 0 };
+			} else {
+				query.category = category;
+			}
+		}
+		
+		// Handle filter parameter
+		if (filter) {
+			if (filter === 'available') {
+				query.stock = { $gt: 0 };
+			} else if (filter === 'discount') {
+				query.discount = { $gt: 0 };
+			}
+		}
+		
+		// Handle sorting
+		if (sortby) {
+			switch(sortby) {
+				case 'popular':
+					sort = { createdAt: -1 };
+					break;
+				case 'newest':
+					sort = { createdAt: -1 };
+					break;
+				case 'price-low':
+					sort = { price: 1 };
+					break;
+				case 'price-high':
+					sort = { price: -1 };
+					break;
+				default:
+					sort = { createdAt: -1 };
+			}
+		} else {
+			sort = { createdAt: -1 };
+		}
+		
+		// Fetch products
+		let products = await productModel.find(query).sort(sort);
+		
+		res.json({
+			success: true,
+			products: products,
+			category: category || '',
+			filter: filter || '',
+			sortby: sortby || ''
+		});
+	} catch (error) {
+		console.error('Shop filter error:', error);
+		res.json({
+			success: false,
+			message: 'Failed to filter products'
+		});
+	}
+});
+
+// Search route
+router.get("/search", isloggedin, async (req, res) => {
+	try {
+		const searchTerm = req.query.q;
+		
+		if (!searchTerm) {
+			req.flash("error", "Please enter a search term");
+			return res.redirect("/shop");
+		}
+		
+		// Search for products by name (case-insensitive)
+		const products = await productModel.find({
+			name: { $regex: searchTerm, $options: "i" }
+		});
+		
+		res.render("shop", { 
+			products, 
+			searchTerm, 
+			loggedin: true 
+		});
+	} catch (error) {
+		console.error(error);
+		req.flash("error", "Search failed");
+		res.redirect("/shop");
+	}
 });
 
 // Product detail route
 router.get("/product/:id", isloggedin, async (req, res) => {
 	try {
 		const product = await productModel.findById(req.params.id);
+		const user = await userModel.findOne({ email: req.user.email });
+		
 		if (!product) {
 			req.flash("error", "Product not found");
 			return res.redirect("/shop");
 		}
-		res.render("product-detail", { product, loggedin: true });
+		
+		// Check if user has already submitted a review for this product
+		const Review = require('../models/review-model');
+		const existingReview = await Review.findOne({
+			productId: req.params.id,
+			userId: user._id
+		});
+		
+		res.render("product-detail", { 
+			product, 
+			loggedin: true, 
+			hasSubmittedReview: !!existingReview,
+			user
+		});
 	} catch (error) {
 		console.error(error);
 		req.flash("error", "Error loading product");
@@ -61,48 +313,69 @@ router.get("/product/:id", isloggedin, async (req, res) => {
 	}
 });
 
-// Shop route
+// Shop route with filtering and sorting
 router.get("/shop", isloggedin, async (req, res) => {
 	try {
-		let { category, filter, sortby } = req.query;
 		let query = {};
+		let sort = {};
 		
-		// Apply category filter
-		if (category === "new") {
-			// For new products, we can sort by createdAt field
-			// This assumes you have timestamps enabled in your product model
-		} else if (category === "discounted") {
-			query.discount = { $gt: 0 };
+		// Handle category filter
+		if (req.query.category) {
+			if (req.query.category === 'new') {
+				// For new collection, you might want to filter by recent date or specific tag
+				// This is a placeholder - adjust based on your product model
+				query.createdAt = { $gte: new Date(Date.now() - 30*24*60*60*1000) }; // Last 30 days
+			} else if (req.query.category === 'discounted') {
+				query.discount = { $gt: 0 };
+			} else {
+				query.category = req.query.category;
+			}
 		}
 		
-		// Apply availability filter
-		if (filter === "available") {
-			query.stock = { $gt: 0 };
-		} else if (filter === "discount") {
-			query.discount = { $gt: 0 };
+		// Handle filter parameter
+		if (req.query.filter) {
+			if (req.query.filter === 'available') {
+				query.stock = { $gt: 0 };
+			} else if (req.query.filter === 'discount') {
+				query.discount = { $gt: 0 };
+			}
 		}
 		
-		// Apply sorting
-		let sortOption = {};
-		if (sortby === "newest") {
-			sortOption = { createdAt: -1 };
-		} else if (sortby === "popular") {
-			// For popular, we could sort by number of purchases (if tracked)
-			sortOption = { name: 1 };
-		} else if (sortby === "price-low") {
-			sortOption = { price: 1 };
-		} else if (sortby === "price-high") {
-			sortOption = { price: -1 };
+		// Handle sorting
+		if (req.query.sortby) {
+			switch(req.query.sortby) {
+				case 'popular':
+					// Placeholder for popularity sorting
+					sort = { createdAt: -1 }; // Default to newest
+					break;
+				case 'newest':
+					sort = { createdAt: -1 };
+					break;
+				case 'price-low':
+					sort = { price: 1 };
+					break;
+				case 'price-high':
+					sort = { price: -1 };
+					break;
+				default:
+					sort = { createdAt: -1 };
+			}
 		} else {
-			// Default sorting: newest first
-			sortOption = { createdAt: -1 };
+			sort = { createdAt: -1 }; // Default sorting
 		}
 		
-		// Build the product query with sorting
-		let products = await productModel.find(query).sort(sortOption);
-		
+		// Fetch products from the database with filters and sorting
+		let products = await productModel.find(query).sort(sort);
 		let success = req.flash("success");
-		res.render("shop", { products, success, category, filter, sortby }); // Pass products and filter params to the EJS view
+		
+		// Pass filter parameters to the view
+		res.render("shop", { 
+			products, 
+			success,
+			category: req.query.category || '',
+			filter: req.query.filter || '',
+			sortby: req.query.sortby || ''
+		});
 	} catch (error) {
 		console.error(error);
 		res.status(500).send("Internal Server Error");
@@ -121,12 +394,10 @@ router.get("/cart", isloggedin, async (req, res) => {
 		}
 
 		// Calculate the bill by adding the price and subtracting the discount
-		let subtotal = 0;
+		let bill = 0;
 		user.cart.forEach(item => {
-			subtotal += Number(item.price || 0) - Number(item.discount || 0);
+			bill += Number(item.price || 0) + 20 - Number(item.discount || 0);
 		});
-		const platformFee = 20;
-		const bill = subtotal + platformFee;
 
 		res.render("cart", { user, bill }); // Pass user and bill to the EJS view
 	} catch (error) {
@@ -137,48 +408,42 @@ router.get("/cart", isloggedin, async (req, res) => {
 
 // Add to cart route
 router.get("/addtocart/:productid", isloggedin, async (req, res) => {
-	try {
-		// Find the user and add the product to their cart
-		let user = await userModel.findOne({ email: req.user.email });
-		// Find the product
-		let product = await productModel.findById(req.params.productid);
-		
-		// Check if product is in stock
-		if (!product || product.stock <= 0) {
-			req.flash("error", "Product is out of stock");
-			return res.redirect("/shop");
-		}
-		
-		// Always add product to cart (allow multiple quantities)
-		// Reduce stock by 1
-		product.stock = Math.max(0, product.stock - 1); // Ensure stock doesn't go negative
-		await product.save();
-		
-		user.cart.push(req.params.productid);
-		await user.save();
-		req.flash("success", "Added to cart");
-		
-		res.redirect("/cart");
-	} catch (error) {
-		console.error(error);
-		res.status(500).send("Internal Server Error");
-	}
+    try {
+        // Find the user and add the product to their cart
+        let user = await userModel.findOne({ email: req.user.email });
+        // Check if product already in cart
+        if (!user.cart.includes(req.params.productid)) {
+            user.cart.push(req.params.productid);
+            // Check if the request is coming from wishlist (referer contains 'wishlist')
+            const referer = req.get('Referer');
+            const fromWishlist = referer && referer.includes('/wishlist');
+            
+            // If coming from wishlist, also remove from wishlist
+            if (fromWishlist && user.wishlist.includes(req.params.productid)) {
+                user.wishlist = user.wishlist.filter(id => id.toString() !== req.params.productid);
+            }
+            
+            await user.save();
+            req.flash("success", "Added to cart");
+            
+            // If coming from wishlist, redirect to cart page
+            if (fromWishlist) {
+                return res.redirect("/cart");
+            }
+        } else {
+            req.flash("success", "Product already in cart");
+        }
+        res.redirect("/shop");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 });
-
 
 // Remove from cart route
 router.get("/removefromcart/:productid", isloggedin, async (req, res) => {
 	try {
 		let user = await userModel.findOne({ email: req.user.email });
-		
-		// Find the product to increase stock
-		let product = await productModel.findById(req.params.productid);
-		if (product) {
-			// Increase stock by 1
-			product.stock = (product.stock || 0) + 1;
-			await product.save();
-		}
-		
 		user.cart = user.cart.filter(id => id.toString() !== req.params.productid);
 		await user.save();
 		req.flash("success", "Item removed from cart");
@@ -201,100 +466,91 @@ router.get("/checkout", isloggedin, async (req, res) => {
 		user.cart.forEach(item => {
 			bill += Number(item.price || 0) + 20 - Number(item.discount || 0);
 		});
-		res.render("checkout", { user, bill, loggedin: true });
+		
+		// Apply coupon discount if exists
+		let finalBill = bill;
+		let couponDiscount = 0;
+		if (req.session.appliedCoupon) {
+			couponDiscount = req.session.appliedCoupon.discount;
+			finalBill = bill - couponDiscount;
+			if (finalBill < 0) finalBill = 0;
+		}
+		
+		res.render("checkout", { user, bill, finalBill, couponDiscount, appliedCoupon: req.session.appliedCoupon, loggedin: true });
 	} catch (error) {
 		console.error(error);
 		res.status(500).send("Internal Server Error");
 	}
 });
 
-// Apply coupon
-router.post("/apply-coupon", isloggedin, async (req, res) => {
+// Process payment
+router.post("/process-payment", isloggedin, async (req, res) => {
 	try {
-		const { couponCode } = req.body;
+		let user = await userModel.findOne({ email: req.user.email }).populate('cart');
 		
-		// Find user and populate cart
-		let user = await userModel.findOne({ email: req.user.email }).populate("cart");
+		// Calculate total amount and prepare order items
+		let totalAmount = 0;
+		const orderItems = [];
 		
-		if (!user || !user.cart || user.cart.length === 0) {
-			return res.json({
-				success: false,
-				message: "Your cart is empty"
-			});
-		}
-		
-		// Calculate subtotal
-		let subtotal = 0;
 		user.cart.forEach(item => {
-			subtotal += Number(item.price || 0) - Number(item.discount || 0);
-		});
-		
-		// Find coupon
-		const couponModel = require("../models/coupon-model");
-		const coupon = await couponModel.findOne({ 
-			code: couponCode.toUpperCase(), 
-			isActive: true, 
-			expiryDate: { $gte: new Date() },
-			usageLimit: { $eq: 0 } // Unlimited or not reached limit
-		});
-		
-		if (!coupon) {
-			return res.json({
-				success: false,
-				message: "Invalid or expired coupon code"
+			const itemPrice = Number(item.price || 0) + 20 - Number(item.discount || 0);
+			totalAmount += itemPrice;
+			orderItems.push({
+				productId: item._id,
+				name: item.name,
+				price: item.price,
+				discount: item.discount || 0,
+				image: item.image,
+				bgcolor: item.bgcolor
 			});
+		});
+		
+		// Apply coupon discount if exists
+		let finalTotal = totalAmount;
+		let couponDiscount = 0;
+		if (req.session.appliedCoupon) {
+			couponDiscount = req.session.appliedCoupon.discount;
+			finalTotal = totalAmount - couponDiscount;
+			if (finalTotal < 0) finalTotal = 0;
 		}
 		
-		if (subtotal < coupon.minOrderAmount) {
-			return res.json({
-				success: false,
-				message: `Minimum order amount of ₹${coupon.minOrderAmount} required for this coupon`
+		// Create order object
+		const order = {
+			id: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+			date: new Date(),
+			total: finalTotal, // Use the discounted total
+			couponUsed: req.session.appliedCoupon ? req.session.appliedCoupon.code : null,
+			couponDiscount: couponDiscount,
+			items: orderItems,
+			status: 'confirmed'
+		};
+		
+		// Add order to user's order history
+		user.orders.push(order);
+		
+		// Add purchased products to user's purchases
+		orderItems.forEach(item => {
+			user.purchases.push({
+				productId: item.productId,
+				orderId: order.id,
+				purchaseDate: order.date
 			});
-		}
-		
-		// Calculate discount
-		let discount = 0;
-		if (coupon.discountType === 'percentage') {
-			discount = (subtotal * coupon.discountValue) / 100;
-			// Apply max discount if set
-			if (coupon.maxDiscountAmount > 0 && discount > coupon.maxDiscountAmount) {
-				discount = coupon.maxDiscountAmount;
-			}
-		} else {
-			discount = coupon.discountValue;
-			// Ensure discount doesn't exceed subtotal
-			if (discount > subtotal) {
-				discount = subtotal;
-			}
-		}
-		
-		// Calculate final total (including platform fee)
-		const platformFee = 20;
-		const newTotal = subtotal - discount + platformFee;
-		
-		return res.json({
-			success: true,
-			message: `Coupon applied! You saved ₹${discount.toFixed(2)}`,
-			discount: discount.toFixed(2),
-			newTotal: newTotal.toFixed(2)
 		});
-	} catch (error) {
-		console.error("Error applying coupon:", error);
-		return res.json({
-			success: false,
-			message: "An error occurred while applying the coupon"
-		});
-	}
-});
+		
+		// Clear cart after successful payment
+		user.cart = [];
 
-// My Account page
-router.get("/my-account", isloggedin, async (req, res) => {
-	try {
-		let user = await userModel.findOne({ email: req.user.email });
-		res.render("myAccount", { user, loggedin: true });
+		// Remove applied coupon from session
+		delete req.session.appliedCoupon;
+
+		await user.save();
+		
+		// Redirect to order confirmation page
+		res.render('order-confirmation', { order, loggedin: true });
 	} catch (error) {
 		console.error(error);
-		res.status(500).send("Internal Server Error");
+		req.flash("error", "Payment failed. Please try again.");
+		res.redirect("/checkout");
 	}
 });
 
@@ -341,19 +597,21 @@ router.post("/change-password", isloggedin, async (req, res) => {
 			});
 		}
 		
-		// Compare current password with stored hash
-		const isValidPassword = await bcrypt.compare(currentPassword, user.password);
-		if (!isValidPassword) {
+		// Check if current password is correct
+		const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+		
+		if (!isPasswordCorrect) {
 			return res.json({
 				success: false,
 				message: "Current password is incorrect"
 			});
 		}
 		
-		// Hash the new password
-		const hashedPassword = await bcrypt.hash(newPassword, 10);
+		// Hash new password
+		const saltRounds = 10;
+		const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 		
-		// Update the password
+		// Update password
 		user.password = hashedPassword;
 		await user.save();
 		
@@ -370,132 +628,10 @@ router.post("/change-password", isloggedin, async (req, res) => {
 	}
 });
 
-// Add to wishlist (AJAX)
-router.post("/add-to-wishlist/:id", isloggedin, async (req, res) => {
-	try {
-		let user = await userModel.findOne({ email: req.user.email });
-		let product = await productModel.findOne({ _id: req.params.id });
-		
-		if (!product) {
-			return res.json({
-				success: false,
-				message: "Product not found"
-			});
-		}
-		
-		// Check if product is already in wishlist
-		if (user.wishlist.includes(product._id)) {
-			// Remove from wishlist if already present
-			user.wishlist = user.wishlist.filter(id => id.toString() !== product._id.toString());
-			await user.save();
-			return res.json({
-				success: true,
-				message: "Removed from wishlist"
-			});
-		} else {
-			// Add to wishlist if not present
-			user.wishlist.push(product._id);
-			await user.save();
-			return res.json({
-				success: true,
-				message: "Added to wishlist successfully"
-			});
-		}
-	} catch (error) {
-		console.error(error);
-		return res.json({
-			success: false,
-			message: "An error occurred while updating wishlist"
-		});
-	}
-});
-
-// Add to wishlist
-router.get("/add-to-wishlist/:productid", isloggedin, async (req, res) => {
-	try {
-		let user = await userModel.findOne({ email: req.user.email });
-		
-		// Check if product already in wishlist
-		if (!user.wishlist) user.wishlist = [];
-		if (!user.wishlist.includes(req.params.productid)) {
-			user.wishlist.push(req.params.productid);
-			await user.save();
-			req.flash("success", "Added to wishlist");
-		} else {
-			req.flash("success", "Product already in wishlist");
-		}
-		res.redirect("/wishlist");
-	} catch (error) {
-		console.error(error);
-		req.flash("error", "Error adding to wishlist");
-		res.redirect("/wishlist");
-	}
-});
-
-// Remove from wishlist
-router.get("/remove-from-wishlist/:productid", isloggedin, async (req, res) => {
-	try {
-		let user = await userModel.findOne({ email: req.user.email });
-		
-		if (user.wishlist) {
-			user.wishlist = user.wishlist.filter(id => id.toString() !== req.params.productid);
-			await user.save();
-			req.flash("success", "Removed from wishlist");
-		}
-		
-		// Check if the referrer is the wishlist page, if so redirect to wishlist, otherwise back
-		const referrer = req.get('Referer') || '/';
-		if (referrer.includes('/wishlist')) {
-			res.redirect('/wishlist');
-		} else {
-			res.redirect('back');
-		}
-	} catch (error) {
-		console.error(error);
-		req.flash("error", "Error removing from wishlist");
-		res.redirect("back");
-	}
-});
-
-// Search products
-router.get("/search", isloggedin, async (req, res) => {
-	try {
-		const query = req.query.q;
-		let products = [];
-		
-		if (query) {
-			products = await productModel.find({
-				$or: [
-					{ name: { $regex: query, $options: "i" } },
-					{ description: { $regex: query, $options: "i" } },
-					{ category: { $regex: query, $options: "i" } }
-				]
-			});
-		}
-		
-		let user = await userModel.findOne({ email: req.user.email });
-		res.render("shop", { products, loggedin: true, user, searchTerm: query });
-	} catch (error) {
-		console.error(error);
-		res.status(500).send("Internal Server Error");
-	}
-});
-
-// View orders
-router.get("/orders", isloggedin, async (req, res) => {
-	try {
-		let user = await userModel.findOne({ email: req.user.email }).populate("orders");
-		res.render("myOrders", { user, loggedin: true });
-	} catch (error) {
-		console.error(error);
-		res.status(500).send("Internal Server Error");
-	}
-});
-
-// View wishlist
+// Wishlist page
 router.get("/wishlist", isloggedin, async (req, res) => {
 	try {
-		let user = await userModel.findOne({ email: req.user.email }).populate("wishlist");
+		const user = await userModel.findOne({ email: req.user.email }).populate('wishlist');
 		res.render("wishlist", { user, loggedin: true });
 	} catch (error) {
 		console.error(error);
@@ -503,179 +639,237 @@ router.get("/wishlist", isloggedin, async (req, res) => {
 	}
 });
 
-// Process payment
-router.post("/process-payment", isloggedin, async (req, res) => {
+// Add to wishlist
+router.post("/add-to-wishlist/:productid", isloggedin, async (req, res) => {
 	try {
-		let user = await userModel.findOne({ email: req.user.email }).populate('cart');
+		const user = await userModel.findOne({ email: req.user.email });
+		const productId = req.params.productid;
 		
-		// Create order from cart items
-		const order = {
-			id: `ORD${Date.now()}`,
-			items: user.cart.map(item => ({
-				_id: item._id,
-				name: item.name,
-				price: item.price,
-				discount: item.discount,
-				image: item.image,
-				bgcolor: item.bgcolor,
-				panelcolor: item.panelcolor,
-				textcolor: item.textcolor
-			})),
-			total: user.cart.reduce((sum, item) => sum + Number(item.price || 0) - Number(item.discount || 0), 0) + 20, // +20 for platform fee
-			date: new Date(),
-			status: 'Confirmed'
-		};
-		
-		// Permanently reduce stock for all items in cart
-		for (let item of user.cart) {
-			let product = await productModel.findById(item._id);
-			if (product) {
-				product.stock = Math.max(0, (product.stock || 0) - 1); // Ensure stock doesn't go negative
-				await product.save();
-			}
+		// Check if product is already in wishlist
+		if (!user.wishlist.includes(productId)) {
+			user.wishlist.push(productId);
+			await user.save();
+			return res.json({
+				success: true,
+				message: "Added to wishlist"
+			});
+		} else {
+			return res.json({
+				success: false,
+				message: "Product already in wishlist"
+			});
 		}
-		
-		// Add order to user's orders
-		if (!user.orders) user.orders = [];
-		user.orders.unshift(order); // Add to beginning of array
-		
-		// Record purchases for review capability
-		if (!user.purchases) user.purchases = [];
-		order.items.forEach(item => {
-			const existingPurchase = user.purchases.find(p => p.productId.toString() === item._id.toString());
-			if (!existingPurchase) {
-				user.purchases.push({
-					productId: item._id,
-					orderId: order.id
-				});
-			}
-		});
-		
-		// Clear cart after successful payment
-		user.cart = [];
-		await user.save();
-		
-		// Render order confirmation page instead of redirecting to home
-		res.render("order-confirmation", { order, loggedin: true });
 	} catch (error) {
 		console.error(error);
-		req.flash("error", "Payment failed. Please try again.");
-		res.redirect("/checkout");
-	}
-});
-
-// Submit review route
-router.post("/submit-review/:productId", isloggedin, async (req, res) => {
-	try {
-		const { rating, title, comment } = req.body;
-		const productId = req.params.productId;
-		
-		// Validate input
-		if (!rating || !title || !comment) {
-			return res.json({
-				success: false,
-				message: "All fields are required"
-			});
-		}
-		
-		if (rating < 1 || rating > 5) {
-			return res.json({
-				success: false,
-				message: "Rating must be between 1 and 5"
-			});
-		}
-		
-		// Check if user has purchased this product
-		let user = await userModel.findOne({ email: req.user.email });
-		const hasPurchased = user.purchases && user.purchases.some(purchase => 
-			purchase.productId && purchase.productId.toString() === productId
-		);
-		
-		if (!hasPurchased) {
-			return res.json({
-				success: false,
-				message: "You can only review products you have purchased"
-			});
-		}
-		
-		// Check if user has already reviewed this product
-		const Review = require('../models/review-model');
-		const existingReview = await Review.findOne({
-			productId: productId,
-			userId: user._id
-		});
-		
-		if (existingReview) {
-			return res.json({
-				success: false,
-				message: "You have already reviewed this product"
-			});
-		}
-		
-		// Create new review
-		const review = new Review({
-			productId: productId,
-			userId: user._id,
-			userName: user.fullName || user.email.split('@')[0],
-			rating: parseInt(rating),
-			title: title,
-			comment: comment
-		});
-		
-		await review.save();
-		
-		// Populate user info for response
-		await review.populate('userId', 'fullName email');
-		
-		return res.json({
-			success: true,
-			message: "Review submitted successfully!",
-			review: {
-				_id: review._id,
-				userName: review.userName,
-				rating: review.rating,
-				title: review.title,
-				comment: review.comment,
-				date: review.date
-			}
-		});
-	} catch (error) {
-		console.error("Error submitting review:", error);
 		return res.json({
 			success: false,
-			message: "An error occurred while submitting your review"
+				message: "Error adding to wishlist"
 		});
 	}
 });
 
-// Get reviews for a product
-router.get("/api/reviews/:productId", async (req, res) => {
+// Add to wishlist (GET route for direct link clicks)
+router.get("/add-to-wishlist/:productid", isloggedin, async (req, res) => {
+    try {
+        const user = await userModel.findOne({ email: req.user.email });
+        const productId = req.params.productid;
+        
+        // Validate that productId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            req.flash("error", "Invalid product ID");
+            return res.redirect("/shop");
+        }
+
+        // Check if product is already in wishlist
+        if (!user.wishlist.includes(productId)) {
+            user.wishlist.push(productId);
+            await user.save();
+            req.flash("success", "Added to wishlist");
+        } else {
+            req.flash("error", "Product already in wishlist");
+        }
+        
+        // Check referer to determine where to redirect
+        const referer = req.get('Referer');
+        if (referer && referer.includes('/product/')) {
+            // If coming from product detail page, redirect back to product page
+            res.redirect(referer);
+        } else {
+            // Otherwise, redirect to wishlist page
+            res.redirect("/wishlist");
+        }
+    } catch (error) {
+        console.error(error);
+        req.flash("error", "Error adding to wishlist");
+        // Redirect to shop page on error
+        res.redirect("/shop");
+    }
+});
+
+// Remove from wishlist
+router.get("/remove-from-wishlist/:productid", isloggedin, async (req, res) => {
 	try {
-		const Review = require('../models/review-model');
-		const reviews = await Review.find({ productId: req.params.productId })
-			.sort({ date: -1 })
-			.populate('userId', 'fullName email');
+		const user = await userModel.findOne({ email: req.user.email });
+		const productId = req.params.productid;
 		
-		// Calculate average rating
-		let avgRating = 0;
-		if (reviews.length > 0) {
-			const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-			avgRating = (totalRating / reviews.length).toFixed(1);
-		}
+		user.wishlist = user.wishlist.filter(id => id.toString() !== productId);
+		await user.save();
 		
-		return res.json({
-			reviews: reviews,
-			averageRating: avgRating,
-			totalReviews: reviews.length
-		});
+		req.flash("success", "Removed from wishlist");
+		res.redirect("/wishlist");
 	} catch (error) {
-		console.error("Error fetching reviews:", error);
-		return res.json({
-			reviews: [],
-			averageRating: 0,
-			totalReviews: 0
-		});
+		console.error(error);
+		req.flash("error", "Error removing from wishlist");
+		res.redirect("/wishlist");
 	}
+});
+
+// My Account page
+router.get("/my-account", isloggedin, async (req, res) => {
+	try {
+		const user = await userModel.findOne({ email: req.user.email });
+		res.render("myAccount", { user, loggedin: true });
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error");
+	}
+});
+
+// My Orders page
+router.get("/orders", isloggedin, async (req, res) => {
+	try {
+		const user = await userModel.findOne({ email: req.user.email }).populate('orders');
+		res.render("myOrders", { user, loggedin: true });
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error");
+	}
+});
+
+// My Reviews page
+router.get("/my-reviews", isloggedin, async (req, res) => {
+	try {
+		const user = await userModel.findOne({ email: req.user.email });
+		const Review = require('../models/review-model');
+		
+		// Get reviews submitted by this user
+		const userReviews = await Review.find({ userId: user._id })
+			.populate('productId')
+			.sort({ date: -1 });
+		
+		res.render("myReviews", { user, userReviews, loggedin: true });
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error");
+	}
+});
+
+// API endpoint to get reviews for a product
+// Fetch reviews
+router.get("/api/reviews/:productId", async (req, res) => {
+    try {
+        const Review = require("../models/review-model");
+
+        const reviews = await Review.find({ productId: req.params.productId })
+            .populate("userId", "fullName email")
+            .sort({ createdAt: -1 }); // ✅ FIXED
+
+        let totalRating = 0;
+        reviews.forEach(r => totalRating += r.rating);
+
+        const averageRating =
+            reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+
+        res.json({
+            reviews,
+            averageRating: parseFloat(averageRating),
+            totalReviews: reviews.length,
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch reviews" });
+    }
+});
+
+
+// Submit Review
+router.post("/submit-review/:productId", isloggedin, async (req, res) => {
+    try {
+        const Review = require("../models/review-model");
+        const { rating, title, comment } = req.body;
+
+        if (!rating || !title || !comment) {
+            return res.json({
+                success: false,
+                message: "Please fill in all review fields",
+            });
+        }
+
+        // ✅ Rating validation
+        const ratingValue = parseInt(rating);
+        if (ratingValue < 1 || ratingValue > 5) {
+            return res.json({
+                success: false,
+                message: "Rating must be between 1 and 5",
+            });
+        }
+
+        const user = await userModel.findOne({ email: req.user.email });
+
+        const existingReview = await Review.findOne({
+            productId: req.params.productId,
+            userId: user._id,
+        });
+
+        if (existingReview) {
+            return res.json({
+                success: false,
+                message: "You have already reviewed this product",
+            });
+        }
+
+        const hasPurchased = user.purchases.some(
+            p => p.productId.toString() === req.params.productId
+        );
+
+        if (!hasPurchased) {
+            return res.json({
+                success: false,
+                message: "You must purchase this product before reviewing it",
+            });
+        }
+
+        const newReview = new Review({
+            productId: req.params.productId,
+            userId: user._id,
+            userName: user.fullName || user.email.split("@")[0],
+            rating: ratingValue,
+            title,
+            comment,
+        });
+
+        await newReview.save();
+
+        res.json({
+            success: true,
+            message: "Review submitted successfully",
+            review: newReview,
+        });
+
+    } catch (error) {
+
+        // ✅ Duplicate review error handling
+        if (error.code === 11000) {
+            return res.json({
+                success: false,
+                message: "You already reviewed this product",
+            });
+        }
+
+        res.json({
+            success: false,
+            message: "An error occurred while submitting your review",
+        });
+    }
 });
 
 // Logout route - use the logout function from authController

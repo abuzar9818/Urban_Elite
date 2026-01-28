@@ -6,15 +6,15 @@ const upload = require("../config/multer-config");
 const isOwnerLoggedIn = require("../middleware/isOwnerLoggedIn");
 const { loginOwner, logoutOwner, registerOwner } = require("../controllers/ownerController");
 
-// Owner registration page
-router.get("/register", (req, res) => {
-	let error = req.flash("error");
-	let success = req.flash("success");
-	res.render("owner-register", { error, success, loggedin: false });
-});
+// Owner registration page - REMOVED AS REQUESTED
+// router.get("/register", (req, res) => {
+// 	let error = req.flash("error");
+// 	let success = req.flash("success");
+// 	res.render("owner-register", { error, success, loggedin: false });
+// });
 
-// Owner registration POST
-router.post("/register", registerOwner);
+// Owner registration POST - REMOVED AS REQUESTED
+// router.post("/register", registerOwner);
 
 // Owner login page
 router.get("/login", (req, res) => {
@@ -295,7 +295,6 @@ router.get("/create-product", isOwnerLoggedIn, (req, res) => {
 	let error = req.flash("error");
 	res.render("createProducts", { success, error, loggedin: true });
 });
-
 
 // Create product POST route
 router.post("/create-product", isOwnerLoggedIn, upload.single("image"), async (req, res) => {
