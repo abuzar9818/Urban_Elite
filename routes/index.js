@@ -9,14 +9,12 @@ const { logout } = require("../controllers/authController");
 
 const router = express.Router();
 
-// Home route - Landing page (for non-logged in users)
 router.get("/", (req, res) => {
 	let error = req.flash("error");
 	let success = req.flash("success");
 	res.render("index", { error, success, loggedin: false });
 });
 
-// Home route for logged in users
 router.get("/home", isloggedin, async (req, res) => {
 	try {
 		const products = await productModel.find().limit(6);
@@ -37,7 +35,6 @@ router.get("/about", isloggedin, (req, res) => {
 router.get("/contact", (req, res) => {
 	let success = req.flash("success");
 	let error = req.flash("error");
-	// Check if user is logged in
 	const loggedin = req.user ? true : false;
 	res.render("contact", { success, error, loggedin });
 });

@@ -3,25 +3,21 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { generateToken } = require("../utils/generateToken");
 
-// Register owner/admin
 module.exports.registerOwner = async (req, res) => {
 	try {
 		const { email, password, fullname } = req.body;
 
-		// Validate input
 		if (!email || !password || !fullname) {
 			req.flash("error", "All fields are required.");
 			return res.redirect("/owners/register");
 		}
 
-		// Check if owner already exists
 		let owner = await ownerModel.findOne({ email: email });
 		if (owner) {
 			req.flash("error", "Owner with this email already exists.");
 			return res.redirect("/owners/register");
 		}
 
-		// Hash password
 		bcrypt.genSalt(10, async (err, salt) => {
 			if (err) {
 				console.error("Error generating salt:", err);
@@ -59,7 +55,6 @@ module.exports.registerOwner = async (req, res) => {
 	}
 };
 
-// Login owner/admin
 module.exports.loginOwner = async (req, res) => {
 	try {
 		const { email, password } = req.body;
@@ -70,16 +65,13 @@ module.exports.loginOwner = async (req, res) => {
 			return res.redirect("/owners/login");
 		}
 
-		// Find the owner by email
 		const owner = await ownerModel.findOne({ email: email });
 		if (!owner) {
 			req.flash("error", "Invalid email or password");
 			return res.redirect("/owners/login");
 		}
 
-		// Check if password is hashed, if not hash it (for existing owners)
 		if (!owner.password.startsWith('$2')) {
-			// Password is not hashed, hash it now
 			bcrypt.genSalt(10, (err, salt) => {
 				if (err) {
 					console.error("Error generating salt:", err);
@@ -101,7 +93,6 @@ module.exports.loginOwner = async (req, res) => {
 			return;
 		}
 
-		// Compare the provided password with the stored hashed password
 		bcrypt.compare(password, owner.password, (err, result) => {
 			if (err) {
 				console.error("Error comparing password:", err);

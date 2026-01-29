@@ -21,7 +21,7 @@ const couponSchema = mongoose.Schema({
     },
     maxDiscountAmount: {
         type: Number,
-        default: 0 // 0 means no limit
+        default: 0 
     },
     expiryDate: {
         type: Date,
@@ -33,7 +33,7 @@ const couponSchema = mongoose.Schema({
     },
     usageLimit: {
         type: Number,
-        default: 0 // 0 means unlimited
+        default: 0 
     },
     usedCount: {
         type: Number,

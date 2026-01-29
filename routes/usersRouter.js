@@ -9,14 +9,12 @@ const {
   logout,
 } = require("../controllers/authController");
 
-// Registration page
 router.get("/register", (req, res) => {
 	let error = req.flash("error");
 	let success = req.flash("success");
 	res.render("register", { error, success, loggedin: false });
 });
 
-// Login page
 router.get("/login", (req, res) => {
 	let error = req.flash("error");
 	let success = req.flash("success");

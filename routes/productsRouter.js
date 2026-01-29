@@ -4,7 +4,6 @@ const productModel = require("../models/product-model");
 
 const router = express.Router();
 
-/* ✅ CREATE PRODUCT */
 router.post("/create", upload.single("image"), async (req, res) => {
   try {
     const {
@@ -20,20 +19,15 @@ router.post("/create", upload.single("image"), async (req, res) => {
     } = req.body;
 
     let imagePath = '';
-    
-    // Handle uploaded image or use default
     if (req.file) {
-        // If image is uploaded, save it to public/images
         const fs = require('fs');
         const path = require('path');
         const imageName = `${Date.now()}-${req.file.originalname}`;
         const uploadPath = path.join(__dirname, '../public/images', imageName);
-        
-        // Save the file
+
         fs.writeFileSync(uploadPath, req.file.buffer);
         imagePath = `/images/${imageName}`;
     } else {
-        // Use random image from public folder
         const fs = require('fs');
         const path = require('path');
         const imageFiles = ['1bag.png', '2bag.png', '3bag.png', '4bag.png', '5bag.png', '6bag.png', '7bag.png', '8bag.png'];

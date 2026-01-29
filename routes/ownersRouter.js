@@ -6,15 +6,6 @@ const upload = require("../config/multer-config");
 const isOwnerLoggedIn = require("../middleware/isOwnerLoggedIn");
 const { loginOwner, logoutOwner, registerOwner } = require("../controllers/ownerController");
 
-// Owner registration page - REMOVED AS REQUESTED
-// router.get("/register", (req, res) => {
-// 	let error = req.flash("error");
-// 	let success = req.flash("success");
-// 	res.render("owner-register", { error, success, loggedin: false });
-// });
-
-// Owner registration POST - REMOVED AS REQUESTED
-// router.post("/register", registerOwner);
 
 // Owner login page
 router.get("/login", (req, res) => {
@@ -26,10 +17,8 @@ router.get("/login", (req, res) => {
 // Owner login POST
 router.post("/login", loginOwner);
 
-// Owner logout
 router.get("/logout", isOwnerLoggedIn, logoutOwner);
 
-// Admin dashboard - protected route
 router.get("/admin", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const products = await productModel.find();
@@ -37,7 +26,6 @@ router.get("/admin", isOwnerLoggedIn, async (req, res) => {
 		let success = req.flash("success");
 		let error = req.flash("error");
 		
-		// Generate sales data
 		let totalOrders = 0;
 		let todayOrders = 0;
 		let todaySales = 0;
@@ -94,7 +82,6 @@ router.get("/admin", isOwnerLoggedIn, async (req, res) => {
 	}
 });
 
-// Admin reviews page
 router.get("/reviews", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const Review = require('../models/review-model');
@@ -116,7 +103,6 @@ router.get("/reviews", isOwnerLoggedIn, async (req, res) => {
 			reviewsByProduct[productId].reviews.push(review);
 		});
 		
-		// Convert to array and calculate averages
 		const productsWithReviews = Object.values(reviewsByProduct).map(productData => {
 			const totalRating = productData.reviews.reduce((sum, review) => sum + review.rating, 0);
 			const averageRating = (totalRating / productData.reviews.length).toFixed(1);
@@ -134,12 +120,10 @@ router.get("/reviews", isOwnerLoggedIn, async (req, res) => {
 	}
 });
 
-// Admin orders page
 router.get("/orders", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const users = await userModel.find({}).populate('orders');
-		
-		// Flatten all orders from all users
+
 		let allOrders = [];
 		users.forEach(user => {
 			if (user.orders && user.orders.length > 0) {
@@ -153,7 +137,7 @@ router.get("/orders", isOwnerLoggedIn, async (req, res) => {
 			}
 		});
 		
-		// Sort by date (newest first)
+
 		allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
 		
 		res.render("admin-orders", { orders: allOrders, loggedin: true });
@@ -166,7 +150,6 @@ router.get("/orders", isOwnerLoggedIn, async (req, res) => {
 // Sales page
 router.get("/sales", isOwnerLoggedIn, async (req, res) => {
 	try {
-		// Generate random sales data
 		const salesData = {
 			todaySales: Math.floor(Math.random() * 50000) + 10000,
 			weekSales: Math.floor(Math.random() * 300000) + 50000,
@@ -211,8 +194,6 @@ router.get("/edit-product/:id", isOwnerLoggedIn, async (req, res) => {
 	}
 });
 
-// Update product
-// Update product
 router.put("/update-product/:id", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const productId = req.params.id;
@@ -260,7 +241,6 @@ router.delete("/delete-product/:id", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const productId = req.params.id;
 		
-		// Find and delete the product
 		const deletedProduct = await productModel.findByIdAndDelete(productId);
 		
 		if (!deletedProduct) {
@@ -270,7 +250,6 @@ router.delete("/delete-product/:id", isOwnerLoggedIn, async (req, res) => {
 			});
 		}
 		
-		// Also remove the product from any user's cart who has it
 		await userModel.updateMany(
 			{ cart: { $in: [productId] } },
 			{ $pull: { cart: productId } }
@@ -289,7 +268,6 @@ router.delete("/delete-product/:id", isOwnerLoggedIn, async (req, res) => {
 	}
 });
 
-// Create product page
 router.get("/create-product", isOwnerLoggedIn, (req, res) => {
 	let success = req.flash("success");
 	let error = req.flash("error");
