@@ -233,5 +233,4 @@ For support, email [your-email@example.com] or create an issue in the repository
 
 **Happy Shopping!** 🛍️
 
-**Happy Shopping!** 🛍️
 
