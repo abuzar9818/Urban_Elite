@@ -1,4 +1,8 @@
+
 # Urban Elite - E-Commerce Platform
+
+# Scatch - E-Commerce Platform
+
 
 A full-featured e-commerce web application built with Node.js, Express, MongoDB, and EJS templating engine.
 
@@ -226,4 +230,8 @@ For support, email [your-email@example.com] or create an issue in the repository
 
 ---
 
+
 **Happy Shopping!** 🛍️
+
+**Happy Shopping!** 🛍️
+
