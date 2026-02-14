@@ -92,6 +92,7 @@ module.exports.loginUser = async (req, res) => {
 			});
 			return;
 		}
+        
 		bcrypt.compare(password, user.password, (err, result) => {
 			if (err) {
 				console.error("Error comparing password:", err);

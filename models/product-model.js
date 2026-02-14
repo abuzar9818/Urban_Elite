@@ -21,7 +21,7 @@ const productSchema = mongoose.Schema(
 
     category: { type: String, default: "General" },
 
-    stock: { type: Number, default: 0 },
+    stock: { type: Number, default: 5 },
   },
   { timestamps: true }
 );
