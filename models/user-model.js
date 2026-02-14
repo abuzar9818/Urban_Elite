@@ -6,8 +6,16 @@ const userSchema =  mongoose.Schema({
         minLength:3,
         trim:true,
     },
-    email:String,
-    password:String,
+    email:{
+        type:String,
+        unique:true,
+        required:true,
+        lowercase:true
+    },
+    password:{
+        type:String,
+        required:true
+    },
     cart:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'product'
