@@ -10,12 +10,10 @@ const productsRouter = require("./routes/productsRouter.js");
 const indexRouter = require("./routes/index.js");
 const setUser = require("./middleware/setUser");
 
-// Load environment variables first
 require("dotenv").config();
-// Then connect to database
 require("./config/mongoose-connection.js");
 
-// Auto-create admin account if it doesn't exist
+
 const ownerModel = require('./models/owner-model');
 const bcrypt = require('bcrypt');
 
@@ -33,7 +31,6 @@ async function createAdminIfNotExists() {
                 password: hashedPassword,
                 gstin: 'ADMIN-GSTIN-123'
             });
-            
             console.log('Admin account created successfully!');
         }
     } catch (error) {
@@ -41,15 +38,12 @@ async function createAdminIfNotExists() {
     }
 }
 
-// Run the function after connecting to the database
 setTimeout(createAdminIfNotExists, 1000);
 
-// Auto-create sample coupons if none exist
 const couponModel = require('./models/coupon-model');
 
 async function createSampleCoupons() {
     try {
-        // Check for each specific coupon code instead of just counting
         const couponCodes = ['WELCOME10', 'SAVE200', 'FREESHIP']; // Add any new coupon codes here
         
         for (const code of couponCodes) {
@@ -82,7 +76,7 @@ async function createSampleCoupons() {
                         newCoupon = {
                             code: 'FREESHIP',
                             discountType: 'fixed',
-                            discountValue: 20, // Covers platform fee
+                            discountValue: 20, 
                             minOrderAmount: 500,
                             expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
                             isActive: true
@@ -103,10 +97,8 @@ async function createSampleCoupons() {
     }
 }
 
-// Run the function after connecting to the database
 setTimeout(createSampleCoupons, 2000);
 
-// Function to add NEWERA coupon if it doesn't exist
 async function addNewEraCoupon() {
     try {
         const existingCoupon = await couponModel.findOne({ code: 'NEWERA' });
@@ -114,7 +106,7 @@ async function addNewEraCoupon() {
             const newCoupon = {
                 code: 'NEWERA',
                 discountType: 'fixed',
-                discountValue: 1000, // Covers platform fee
+                discountValue: 1000, 
                 minOrderAmount: 8000,
                 expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
                 isActive: true
@@ -128,49 +120,46 @@ async function addNewEraCoupon() {
     }
 }
 
-// Run the NEWERA coupon addition function
 setTimeout(addNewEraCoupon, 2500);
 
 const app = express();
 
 // Middleware
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
-app.use(methodOverride('_method')); // Allow PUT and DELETE methods in HTML forms
-app.use(cookieParser()); // Parse cookies
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
+app.use(methodOverride('_method')); 
+app.use(cookieParser());
 app.use(
 	expressSession({
 		resave: false,
 		saveUninitialized: false,
 		secret: process.env.EXPRESS_SESSION_SECRET || "fallback-secret-key-change-in-production",
 	})
-); // Use express-session middleware for sessions
+); 
 
-app.use(flash()); // Flash messages to the screen
+app.use(flash()); 
 
 app.use(setUser);
 
-// ✅ Global Variables for All EJS Pages
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
 
-    // ✅ Make user available globally (prevents "user is not defined")
     res.locals.user = req.user || null;
 
     next();
 });
 
-app.use(express.static(path.join(__dirname, "public"))); // Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, "public"))); 
 
-app.set("views", path.join(__dirname, "views")); // Set the views directory
-app.set("view engine", "ejs"); // Set the view engine to EJS
+app.set("views", path.join(__dirname, "views")); 
+app.set("view engine", "ejs");
 
 // Routes
-app.use("/", indexRouter); // Use indexRouter for requests starting with "/"
-app.use("/owners", ownersRouter); // Use ownersRouter for requests starting with "/owners"
-app.use("/users", usersRouter); // Use usersRouter for requests starting with "/users"
-app.use("/products", productsRouter); // Use productsRouter for requests starting with "/products"
+app.use("/", indexRouter); 
+app.use("/owners", ownersRouter);
+app.use("/users", usersRouter); 
+app.use("/products", productsRouter); 
 
 // Start the server
 const PORT = process.env.PORT || 3000;

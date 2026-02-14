@@ -17,7 +17,7 @@ router.get("/", (req, res) => {
 
 router.get("/home", isloggedin, async (req, res) => {
 	try {
-		const products = await productModel.find().limit(6);
+		const products = await productModel.find().limit(9);
 		let success = req.flash("success");
 		res.render("home", { products, success, loggedin: true });
 	} catch (error) {
@@ -180,7 +180,6 @@ router.post("/contact", async (req, res) => {
 		res.redirect("/contact");
 	}
 });
-
 
 
 // Shop filter route (POST)
