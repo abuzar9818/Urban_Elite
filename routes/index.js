@@ -513,7 +513,13 @@ router.get("/checkout", isloggedin, async (req, res) => {
 		}
 		let bill = 0;
 		user.cart.forEach(item => {
-			bill += Number(item.price || 0) + 20 - Number(item.discount || 0);
+		let subtotal = 0;
+user.cart.forEach(item => {
+	subtotal += Number(item.price || 0);
+});
+
+let bill = subtotal + 20;
+
 		});
 		
 		// Apply coupon discount if exists
@@ -535,49 +541,62 @@ router.get("/checkout", isloggedin, async (req, res) => {
 // Process payment
 router.post("/process-payment", isloggedin, async (req, res) => {
 	try {
-		let user = await userModel.findOne({ email: req.user.email }).populate('cart');
-		
-		// Calculate total amount and prepare order items
-		let totalAmount = 0;
+		let user = await userModel.findOne({ email: req.user.email }).populate("cart");
+
+		if (!user || !user.cart || user.cart.length === 0) {
+			req.flash("error", "Cart is empty");
+			return res.redirect("/cart");
+		}
+
+		/* ---------------- PRICE CALCULATION ---------------- */
+
+		let subtotal = 0;
 		const orderItems = [];
-		
+
 		user.cart.forEach(item => {
-			const itemPrice = Number(item.price || 0) + 20 - Number(item.discount || 0);
-			totalAmount += itemPrice;
+			const finalPrice = Number(item.price || 0); // already discounted price
+			subtotal += finalPrice;
+
 			orderItems.push({
 				productId: item._id,
 				name: item.name,
-				price: item.price,
+				price: finalPrice,
 				discount: item.discount || 0,
 				image: item.image,
-				bgcolor: item.bgcolor
+				bgcolor: item.bgcolor,
+				quantity: 1
 			});
 		});
-		
-		// Apply coupon discount if exists
-		let finalTotal = totalAmount;
+
+		const platformFee = 20;
+		let totalAmount = subtotal + platformFee;
+
+		/* ---------------- COUPON ---------------- */
+
 		let couponDiscount = 0;
+
 		if (req.session.appliedCoupon) {
-			couponDiscount = req.session.appliedCoupon.discount;
-			finalTotal = totalAmount - couponDiscount;
-			if (finalTotal < 0) finalTotal = 0;
+			couponDiscount = Number(req.session.appliedCoupon.discount || 0);
+			totalAmount -= couponDiscount;
+			if (totalAmount < 0) totalAmount = 0;
 		}
-		
-		// Create order object
+
+		/* ---------------- CREATE ORDER ---------------- */
+
 		const order = {
 			id: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
 			date: new Date(),
-			total: finalTotal, // Use the discounted total
-			couponUsed: req.session.appliedCoupon ? req.session.appliedCoupon.code : null,
+			total: totalAmount,
+			couponUsed: req.session.appliedCoupon?.code || null,
 			couponDiscount: couponDiscount,
 			items: orderItems,
-			status: 'confirmed'
+			status: "confirmed"
 		};
-		
-		// Add order to user's order history
+
+		/* ---------------- SAVE ORDER ---------------- */
+
 		user.orders.push(order);
-		
-		// Add purchased products to user's purchases
+
 		orderItems.forEach(item => {
 			user.purchases.push({
 				productId: item.productId,
@@ -585,23 +604,28 @@ router.post("/process-payment", isloggedin, async (req, res) => {
 				purchaseDate: order.date
 			});
 		});
-		
-		// Clear cart after successful payment
-		user.cart = [];
 
-		// Remove applied coupon from session
+		/* ---------------- CLEAR CART + COUPON ---------------- */
+
+		user.cart = [];
 		delete req.session.appliedCoupon;
 
 		await user.save();
-		
-		// Redirect to order confirmation page
-		res.render('order-confirmation', { order, loggedin: true });
+
+		/* ---------------- RENDER CONFIRMATION ---------------- */
+
+		res.render("order-confirmation", {
+			order,
+			loggedin: true
+		});
+
 	} catch (error) {
-		console.error(error);
-		req.flash("error", "Payment failed. Please try again.");
+		console.error("PAYMENT ERROR:", error);
+		req.flash("error", "Payment failed");
 		res.redirect("/checkout");
 	}
 });
+
 
 // Update user profile
 router.post("/update-profile", isloggedin, async (req, res) => {
