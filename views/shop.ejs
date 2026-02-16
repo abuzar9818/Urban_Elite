@@ -90,8 +90,8 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         <% products.forEach(function(product, index){ %>
                                             <div class="w-full">
-                                                <div
-                                                    class="product-card-item rounded-lg shadow-md transition-all duration-300 overflow-hidden transform hover:-translate-y-1 product-card group <%= (!product.stock || product.stock <= 0) ? 'out-of-stock' : '' %>">
+                                                <div class="product-card-item rounded-lg shadow-md transition-all duration-300 overflow-hidden transform hover:-translate-y-1 product-card group flex flex-col h-full <%= (!product.stock || product.stock <= 0) ? 'out-of-stock' : '' %>">
+
 
                                                     <!-- Product Image -->
                                                     <a href="/product/<%= product._id %>" class="block">
@@ -108,7 +108,7 @@
                                                     </a>
 
                                                     <!-- Product Info Panel -->
-                                                    <div class="product-info-panel flex justify-between items-center px-4 py-4 rounded-b-lg"
+                                                    <div class="product-info-panel flex justify-between items-start px-4 py-4 flex-grow"
                                                         style="background-color: <%= product.panelcolor || '#f3f4f6' %>; color: <%= product.textcolor || '#000000' %>;">
                                                         <a href="/product/<%= product._id %>" class="flex-1">
                                                             <h3

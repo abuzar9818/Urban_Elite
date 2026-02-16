@@ -179,6 +179,27 @@ router.post("/remove-coupon", isloggedin, async (req, res) => {
 	}
 });
 
+router.get("/order/:orderId", isloggedin, async (req, res) => {
+	try {
+		const user = await userModel.findOne({ email: req.user.email });
+
+		const order = user.orders.find(o => o.id === req.params.orderId);
+
+		if (!order) {
+			req.flash("error", "Order not found");
+			return res.redirect("/orders");
+		}
+
+		res.render("order-confirmation", {
+			order,
+			loggedin: true
+		});
+
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error");
+	}
+});
 
 // Contact form submission
 router.post("/contact", async (req, res) => {

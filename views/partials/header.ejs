@@ -123,6 +123,15 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #A05A66;
         }
+        @keyframes slideDown {
+    from { opacity:0; transform: translateY(-10px); }
+    to { opacity:1; transform: translateY(0); }
+}
+
+.animate-slideDown {
+    animation: slideDown 0.25s ease;
+}
+
     </style>
 </head>
 
@@ -151,8 +160,14 @@
                         URBAN ÉLITE
                     </span>
                 </a>
+                <!-- Mobile Menu Button -->
+<button id="menuBtn" class="md:hidden text-2xl text-gray-700 ml-auto">
+    <i class="ri-menu-line"></i>
+</button>
+
                 <% var loggedin = typeof loggedin != "undefined" ? loggedin : true %>
                 <% var isAdmin = typeof isAdmin != "undefined" ? isAdmin : false %>
+                <div id="navMenu" class="hidden md:flex items-center gap-4 md:gap-6">
                 <% if(loggedin && isAdmin){ %>
                     <!-- Admin Navigation -->
                     <div class="flex items-center gap-4 md:gap-6">
@@ -238,6 +253,90 @@
                         <a href="/owners/login" class="transition-colors font-medium text-sm md:text-base" style="color: #1E1E1E;" onmouseover="this.style.color='#B76E79'" onmouseout="this.style.color='#1E1E1E'">Admin</a>
                     </div>
                 <% } %>
+                </div>
+
+
             </div>
         </div>
     </nav>
+<!-- Premium Mobile Menu -->
+<div id="mobileMenu"
+     class="md:hidden fixed top-[64px] left-0 w-full hidden backdrop-blur-lg bg-white/80 border-t shadow-lg z-50 animate-slideDown">
+
+    <!-- Mobile Search -->
+    <div class="p-3 border-b bg-white sticky top-0">
+        <form action="/search" method="GET" class="flex">
+            <input type="text" name="q" placeholder="Search products..."
+                class="flex-1 px-4 py-2 rounded-l-lg border focus:outline-none">
+            <button class="px-4 bg-[#B76E79] text-white rounded-r-lg">
+                <i class="ri-search-line"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Menu Links -->
+    <div class="flex flex-col text-gray-800 font-medium">
+
+        <a href="/home" class="menu-link py-3 px-4 border-b flex items-center gap-2">
+            <i class="ri-home-4-line"></i> Home
+        </a>
+
+        <a href="/shop" class="menu-link py-3 px-4 border-b flex items-center gap-2">
+            <i class="ri-store-2-line"></i> Shop
+        </a>
+
+        <a href="/cart" class="menu-link py-3 px-4 border-b flex items-center gap-2">
+            <i class="ri-shopping-cart-line"></i> Cart
+        </a>
+
+        <a href="/wishlist" class="menu-link py-3 px-4 border-b flex items-center gap-2">
+            <i class="ri-heart-line"></i> Wishlist
+        </a>
+
+        <a href="/logout" class="menu-link py-3 px-4 flex items-center gap-2 text-[#B76E79]">
+            <i class="ri-logout-box-line"></i> Logout
+        </a>
+
+    </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const icon = menuBtn.querySelector("i");
+
+    // Toggle Menu
+    menuBtn.addEventListener("click", function () {
+        mobileMenu.classList.toggle("hidden");
+
+        // Hamburger ↔ X
+        icon.classList.toggle("ri-menu-line");
+        icon.classList.toggle("ri-close-line");
+    });
+
+    // Close when clicking outside
+    document.addEventListener("click", function (e) {
+        if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+            mobileMenu.classList.add("hidden");
+            icon.classList.add("ri-menu-line");
+            icon.classList.remove("ri-close-line");
+        }
+    });
+
+    // Close after clicking link
+    document.querySelectorAll(".menu-link").forEach(link => {
+        link.addEventListener("click", () => {
+            mobileMenu.classList.add("hidden");
+            icon.classList.add("ri-menu-line");
+            icon.classList.remove("ri-close-line");
+        });
+    });
+
+});
+</script>
+
+
+
