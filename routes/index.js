@@ -43,120 +43,142 @@ router.get("/contact", (req, res) => {
 router.post("/apply-coupon", isloggedin, async (req, res) => {
 	try {
 		const { couponCode } = req.body;
-		const user = await userModel.findOne({ email: req.user.email }).populate('cart');
-		
+		const user = await userModel.findOne({ email: req.user.email }).populate("cart");
+
 		if (!couponCode) {
 			return res.json({
 				success: false,
 				message: "Please enter a coupon code"
 			});
 		}
-		
-		const Coupon = require('../models/coupon-model');
-		const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
-		
+
+		const Coupon = require("../models/coupon-model");
+		const coupon = await Coupon.findOne({
+			code: couponCode.toUpperCase(),
+			isActive: true
+		});
+
 		if (!coupon) {
 			return res.json({
 				success: false,
 				message: "Invalid coupon code"
 			});
 		}
-		
-		// Check if coupon is expired
-		if (coupon.expiryDate < new Date()) {
+
+		// Expiry check
+		if (coupon.expiryDate && coupon.expiryDate < new Date()) {
 			return res.json({
 				success: false,
 				message: "Coupon has expired"
 			});
 		}
-		
-		// Check if usage limit reached
+
+		// Usage limit check
 		if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
 			return res.json({
 				success: false,
 				message: "Coupon usage limit reached"
 			});
 		}
-		
-		// Calculate total cart amount
-		let cartTotal = 0;
+
+		// ✅ Calculate subtotal (FINAL item prices only)
+		let subtotal = 0;
 		user.cart.forEach(item => {
-			cartTotal += Number(item.price || 0) + 20 - Number(item.discount || 0);
+			subtotal += Number(item.price || 0);
 		});
-		
-		// Check minimum order amount
+
+		let platformFee = 20;
+		let cartTotal = subtotal + platformFee;
+
+		// Minimum order check
 		if (cartTotal < coupon.minOrderAmount) {
 			return res.json({
 				success: false,
-				message: `Minimum order amount of ₹${coupon.minOrderAmount} required for this coupon`
+				message: `Minimum order amount of ₹${coupon.minOrderAmount} required`
 			});
 		}
-		
-		// Calculate discount
+
+		// ✅ Calculate discount
 		let discount = 0;
-		if (coupon.discountType === 'percentage') {
-			discount = (cartTotal * coupon.discountValue) / 100;
-			// Apply max discount limit if set
+
+		if (coupon.discountType === "percentage") {
+			discount = (subtotal * coupon.discountValue) / 100;
+
 			if (coupon.maxDiscountAmount > 0 && discount > coupon.maxDiscountAmount) {
 				discount = coupon.maxDiscountAmount;
 			}
 		} else {
-			// Fixed discount
 			discount = coupon.discountValue;
-			// Ensure discount doesn't exceed cart total
-			if (discount > cartTotal) {
-				discount = cartTotal;
-			}
 		}
-		
-		// Ensure discount doesn't exceed cart total
-		if (discount > cartTotal) {
-			discount = cartTotal;
-		}
-		
-		// Update coupon usage count
+
+		// Prevent over-discount
+		if (discount > subtotal) discount = subtotal;
+
+		// ✅ New totals
+		let newSubtotal = subtotal - discount;
+		if (newSubtotal < 0) newSubtotal = 0;
+
+		let newTotal = newSubtotal + platformFee;
+
+		// Update coupon usage
 		await Coupon.findByIdAndUpdate(coupon._id, { $inc: { usedCount: 1 } });
-		
-		// Add coupon info to session for checkout
+
+		// Save coupon in session
 		req.session.appliedCoupon = {
 			code: coupon.code,
-			discount: discount,
+			discount,
 			type: coupon.discountType,
 			value: coupon.discountValue
 		};
-		
+
 		return res.json({
 			success: true,
-			message: `Coupon applied successfully! You saved ₹${discount.toFixed(2)}`,
-			discount: discount
+			message: `Coupon applied! You saved ₹${discount.toFixed(2)}`,
+			discount: discount.toFixed(2),
+			newSubtotal: newSubtotal.toFixed(2),
+			newTotal: newTotal.toFixed(2)
 		});
+
 	} catch (error) {
-		console.error('Error applying coupon:', error);
+		console.error("Error applying coupon:", error);
 		return res.json({
 			success: false,
-			message: "An error occurred while applying the coupon"
+			message: "Error applying coupon"
 		});
 	}
 });
 
+
 // Remove coupon
 router.post("/remove-coupon", isloggedin, async (req, res) => {
 	try {
-		// Remove coupon from session
+		const user = await userModel.findOne({ email: req.user.email }).populate("cart");
+
 		delete req.session.appliedCoupon;
-		
+
+		let subtotal = 0;
+		user.cart.forEach(item => {
+			subtotal += Number(item.price || 0);
+		});
+
+		let platformFee = 20;
+		let total = subtotal + platformFee;
+
 		return res.json({
 			success: true,
-			message: "Coupon removed successfully"
+			message: "Coupon removed",
+			subtotal: subtotal.toFixed(2),
+			total: total.toFixed(2)
 		});
 	} catch (error) {
-		console.error('Error removing coupon:', error);
+		console.error(error);
 		return res.json({
 			success: false,
-			message: "An error occurred while removing the coupon"
+			message: "Error removing coupon"
 		});
 	}
 });
+
 
 // Contact form submission
 router.post("/contact", async (req, res) => {
@@ -381,26 +403,36 @@ router.get("/shop", isloggedin, async (req, res) => {
 // Cart route
 router.get("/cart", isloggedin, async (req, res) => {
 	try {
-		// Find the user and populate their cart
 		let user = await userModel.findOne({ email: req.user.email }).populate("cart");
 
 		if (!user || !user.cart || user.cart.length === 0) {
-			// Don't redirect, just render cart with empty state
-			return res.render("cart", { user: { cart: [] }, bill: 0 });
+			return res.render("cart", {
+				user: { cart: [] },
+				subtotal: 0,
+				bill: 0
+			});
 		}
 
-		// Calculate the bill by adding the price and subtracting the discount
-		let bill = 0;
+		let subtotal = 0;
 		user.cart.forEach(item => {
-			bill += Number(item.price || 0) + 20 - Number(item.discount || 0);
+			subtotal += Number(item.price || 0); // FINAL item price only
 		});
 
-		res.render("cart", { user, bill }); // Pass user and bill to the EJS view
+		let platformFee = 20;
+		let finalBill = subtotal + platformFee;
+
+		res.render("cart", {
+			user,
+			subtotal,
+			bill: finalBill
+		});
+
 	} catch (error) {
 		console.error(error);
 		res.status(500).send("Internal Server Error");
 	}
 });
+
 
 // Add to cart route
 router.get("/addtocart/:productid", isloggedin, async (req, res) => {

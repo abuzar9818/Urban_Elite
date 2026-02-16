@@ -63,19 +63,33 @@
                     </p>
 
                     <!-- Price -->
-                    <div class="flex items-center justify-between">
+<div class="flex items-center justify-between">
 
-                        <div>
-                            <p class="text-xl font-bold" style="color:#1E1E1E;">
-                                ₹ <%= item.price %>
-                            </p>
+    <div>
 
-                            <% if(item.discount && item.discount > 0){ %>
-                                <p class="text-sm font-medium" style="color:#B76E79;">
-                                    Save ₹<%= item.discount %>
-                                </p>
-                            <% } %>
-                        </div>
+        <% 
+            let originalPrice = item.price + (item.discount || 0); 
+            let finalPrice = item.price; 
+        %>
+
+        <!-- Final Price -->
+        <p class="text-xl font-bold" style="color:#1E1E1E;">
+            ₹ <%= finalPrice %>
+        </p>
+
+        <!-- Original Price (Cut) -->
+        <% if(item.discount && item.discount > 0){ %>
+            <p class="text-sm text-gray-500 line-through">
+                ₹ <%= originalPrice %>
+            </p>
+
+            <!-- Save Text -->
+            <p class="text-sm font-medium text-green-600">
+                You saved ₹<%= item.discount %> 🎉
+            </p>
+        <% } %>
+
+    </div>
 
                         <!-- Remove Button -->
                         <a href="/removefromcart/<%= item._id %>"
@@ -155,7 +169,8 @@
 
                     <div class="flex justify-between">
                         <span class="text-gray-600">Subtotal</span>
-                        <span class="font-medium">₹ <span id="subtotal"><%= bill - 20 %></span></span>
+                        <span class="font-medium">₹ <span id="subtotal"><%= subtotal %></span>
+</span>
                     </div>
 
                     <div class="flex justify-between" id="discountRow" style="display:none;">
@@ -242,7 +257,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     document.getElementById("discountAmount").textContent = result.discount;
                     document.getElementById("discountRow").style.display = "flex";
-                    document.getElementById("finalTotal").textContent = result.newTotal;
+                    document.getElementById("subtotal").textContent = result.newSubtotal;
+document.getElementById("finalTotal").textContent = result.newTotal;
                 } else {
                     couponMessage.style.backgroundColor = "#FDEAEA";
                     couponMessage.style.color = "#B02A2A";

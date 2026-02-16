@@ -9,6 +9,7 @@ const usersRouter = require("./routes/usersRouter.js");
 const productsRouter = require("./routes/productsRouter.js");
 const indexRouter = require("./routes/index.js");
 const setUser = require("./middleware/setUser");
+const morgan = require("morgan");
 
 require("dotenv").config();
 require("./config/mongoose-connection.js");
@@ -127,6 +128,7 @@ const app = express();
 // Middleware
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
+app.use(morgan("dev"));
 app.use(methodOverride('_method')); 
 app.use(cookieParser());
 app.use(
