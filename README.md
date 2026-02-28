@@ -1,8 +1,4 @@
-
 # Urban Elite - E-Commerce Platform
-
-# Scatch - E-Commerce Platform
-
 
 A full-featured e-commerce web application built with Node.js, Express, MongoDB, and EJS templating engine.
 
@@ -10,17 +6,19 @@ A full-featured e-commerce web application built with Node.js, Express, MongoDB,
 
 ### User Features
 - **User Authentication**: Secure login and registration system
-- **Product Browsing**: Browse products with filtering and sorting options
+- **Product Browsing**: Browse products with filtering, sorting options, and **Pagination**
+- **Image Optimization**: Cloudinary URL transformations for lightning-fast responsive images with lazy loading
 - **Product Reviews**: Customers can write and read product reviews (purchase required)
-- **Wishlist**: Save products for later purchase
-- **Shopping Cart**: Add/remove products from cart
+- **Wishlist**: Save products for later purchase, with direct navigation
+- **Shopping Cart**: Add/remove products from cart, with immediate redirection
+- **Checkout & Payments**: Seamless checkout experience configured with **Razorpay integration**
 - **Coupon System**: Apply discount coupons at checkout
 - **Order Management**: View order history and status
 - **Profile Management**: Update personal information and change password
 
 ### Admin Features
 - **Admin Dashboard**: Overview of sales and products
-- **Product Management**: Add, edit, and delete products
+- **Product Management**: Add, edit, and delete products (images synced directly with Cloudinary)
 - **Order Management**: View and manage customer orders
 - **Coupon Management**: Create and manage discount coupons
 - **Low Stock Alerts**: Automatic notifications for low inventory
@@ -29,26 +27,28 @@ A full-featured e-commerce web application built with Node.js, Express, MongoDB,
 - **Responsive Design**: Mobile-friendly interface
 - **Session Management**: Secure user sessions
 - **Database Integration**: MongoDB with Mongoose ODM
+- **Cloud Storage**: **Cloudinary integration** for scalable product image storage
 - **Flash Messages**: User feedback system
-- **Image Upload**: Product image management
 - **Search Functionality**: Product search capabilities
 
 ## 🛠️ Technologies Used
 
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB, Mongoose
+- **Cloud Storage**: Cloudinary, multer-storage-cloudinary
 - **Authentication**: bcrypt, express-session
 - **Templating**: EJS (Embedded JavaScript)
 - **Frontend**: HTML, CSS, JavaScript
-- **Styling**: Custom CSS with responsive design
+- **Styling**: Tailwind CSS integration
+- **Payments**: Razorpay API
 - **Security**: Cookie-parser, method-override
-- **File Upload**: Multer
 - **Environment**: dotenv for configuration
 
 ## 📦 Prerequisites
 
 - Node.js (v14 or higher)
 - MongoDB (local or Atlas)
+- Cloudinary Account (for image storage)
 - npm (comes with Node.js)
 
 ## 🔧 Installation
@@ -67,23 +67,29 @@ A full-featured e-commerce web application built with Node.js, Express, MongoDB,
 3. **Set up environment variables**:
    Create a `.env` file in the root directory with the following:
    ```env
-   # MongoDB Connection
-   MONGODB_URI=your_mongodb_connection_string
+   # JWT Configuration
+   JWT_KEY=your_jwt_secret_key_here
    
-   # Session Secret
-   EXPRESS_SESSION_SECRET=your_secret_key_here
+   # Session Configuration
+   EXPRESS_SESSION_SECRET=your_session_secret_key_here
+
+   # Database Credentials (If applicable to your setup)
+   DB_USER=your_database_username
+   DB_PASS=your_database_password
    
-   # Admin Credentials
-   ADMIN_EMAIL=admin@example.com
-   ADMIN_PASSWORD=your_admin_password
-   
-   # Server Port
-   PORT=3000
+   # Razorpay Configuration
+   RAZORPAY_KEY_ID=your_razorpay_key_id
+   RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+
+   # Cloudinary Credentials (Required for Image Uploads)
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
    ```
 
 4. **Start the application**:
    ```bash
-   npm start
+   npm run dev
    ```
 
 5. **Access the application**:
@@ -94,6 +100,7 @@ A full-featured e-commerce web application built with Node.js, Express, MongoDB,
 ```
 scatch/
 ├── config/
+│   ├── cloudinary.js
 │   ├── keys.js
 │   ├── mongoose-connection.js
 │   └── multer-config.js
@@ -113,7 +120,7 @@ scatch/
 ├── public/
 │   ├── styles.css
 │   ├── js/
-│   └── uploads/
+│   └── uploads/ (Deprecated for Cloudinary)
 ├── routes/
 │   ├── index.js
 │   ├── ownersRouter.js
@@ -157,16 +164,17 @@ Pre-configured sample coupons:
 - **NEWERA**: ₹1000 discount on orders over ₹8000 (60-day validity)
 
 ### Shop Features
+- High-performance Pagination included directly within search and filter operations
 - Category filtering (New Collection, Discounted Products)
 - Availability filtering (In Stock, On Sale)
 - Sorting options (Popular, Newest, Price Low-High, Price High-Low)
 - Search functionality
-- Wishlist integration on product cards
+- Advanced Wishlist and Cart navigation (clicks immediately take users to the destination)
 
-### Security Features
+### Security & Performance
 - Password hashing with bcrypt
 - Session-based authentication
-- Input validation and sanitization
+- Image optimization using Cloudinary native transformations on all EJS screens 
 - Protected routes for authenticated users
 - Admin-only access for management features
 
@@ -175,8 +183,8 @@ Pre-configured sample coupons:
 ### For Customers
 1. **Register/Login** - Create an account or login
 2. **Browse Products** - Use filters and search to find products
-3. **Add to Wishlist** - Save items for later
-4. **Add to Cart** - Select products for purchase
+3. **Add to Wishlist** - Save items for later, jumping straight to wishlist page
+4. **Add to Cart** - Select products for purchase, jumping straight to cart page
 5. **Apply Coupons** - Use discount codes at checkout
 6. **Checkout** - Complete purchase with payment validation
 7. **Review Products** - Share feedback on purchased items
@@ -185,7 +193,7 @@ Pre-configured sample coupons:
 ### For Admin
 1. **Login** - Access admin panel with credentials
 2. **Dashboard** - View sales overview and product analytics
-3. **Product Management** - Add, edit, or remove products
+3. **Product Management** - Add, edit, or remove products securely backed to Cloud Storage
 4. **Order Management** - Process and track customer orders
 5. **Coupon Management** - Create and manage discount codes
 6. **Inventory Management** - Monitor stock levels and alerts
@@ -198,13 +206,13 @@ If you encounter connection issues:
 - Ensure MongoDB service is running
 - Check network connectivity for Atlas clusters
 
+### Cloudinary Upload Error ("Must supply api_key")
+- Make sure `dotenv.config()` is at the very top of `app.js`
+- Verify `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, and `CLOUDINARY_CLOUD_NAME` exist in `.env`
+
 ### Session Issues
 - Clear browser cookies if experiencing login problems
 - Verify `EXPRESS_SESSION_SECRET` is set in `.env`
-
-### File Upload Issues
-- Ensure `public/uploads` directory exists and has write permissions
-- Check file size limits in multer configuration
 
 ## 🤝 Contributing
 
@@ -220,7 +228,7 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email [your-email@example.com] or create an issue in the repository.
+For support, email [abuzarahmad678@gmail.com] or create an issue in the repository.
 
 ## 🙏 Acknowledgments
 
@@ -230,7 +238,4 @@ For support, email [your-email@example.com] or create an issue in the repository
 
 ---
 
-
 **Happy Shopping!** 🛍️
-
-
