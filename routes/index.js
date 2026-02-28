@@ -205,7 +205,7 @@ router.get("/order/:orderId", isloggedin, async (req, res) => {
 router.post("/contact", async (req, res) => {
 	try {
 		const { name, email, message } = req.body;
-		
+
 		// Validate input
 		if (!name || !email || !message) {
 			req.flash("error", "Please fill in all required fields");
@@ -214,7 +214,7 @@ router.post("/contact", async (req, res) => {
 
 		// Send email notification to admin (no database storage)
 		// In a real application, you would send an email here
-		
+
 		req.flash("success", "Thank you for your message! We've received your inquiry and will get back to you soon.");
 		res.redirect("/contact");
 	} catch (error) {
@@ -230,20 +230,20 @@ router.post("/shop/filter", isloggedin, async (req, res) => {
 	try {
 		let query = {};
 		let sort = {};
-		
+
 		const { category, filter, sortby } = req.body;
-		
+
 		// Handle category filter
 		if (category) {
 			if (category === 'new') {
-				query.createdAt = { $gte: new Date(Date.now() - 30*24*60*60*1000) };
+				query.createdAt = { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
 			} else if (category === 'discounted') {
 				query.discount = { $gt: 0 };
 			} else {
 				query.category = category;
 			}
 		}
-		
+
 		// Handle filter parameter
 		if (filter) {
 			if (filter === 'available') {
@@ -252,10 +252,10 @@ router.post("/shop/filter", isloggedin, async (req, res) => {
 				query.discount = { $gt: 0 };
 			}
 		}
-		
+
 		// Handle sorting
 		if (sortby) {
-			switch(sortby) {
+			switch (sortby) {
 				case 'popular':
 					sort = { createdAt: -1 };
 					break;
@@ -274,10 +274,10 @@ router.post("/shop/filter", isloggedin, async (req, res) => {
 		} else {
 			sort = { createdAt: -1 };
 		}
-		
+
 		// Fetch products
 		let products = await productModel.find(query).sort(sort);
-		
+
 		res.json({
 			success: true,
 			products: products,
@@ -298,21 +298,21 @@ router.post("/shop/filter", isloggedin, async (req, res) => {
 router.get("/search", isloggedin, async (req, res) => {
 	try {
 		const searchTerm = req.query.q;
-		
+
 		if (!searchTerm) {
 			req.flash("error", "Please enter a search term");
 			return res.redirect("/shop");
 		}
-		
+
 		// Search for products by name (case-insensitive)
 		const products = await productModel.find({
 			name: { $regex: searchTerm, $options: "i" }
 		});
-		
-		res.render("shop", { 
-			products, 
-			searchTerm, 
-			loggedin: true 
+
+		res.render("shop", {
+			products,
+			searchTerm,
+			loggedin: true
 		});
 	} catch (error) {
 		console.error(error);
@@ -326,22 +326,22 @@ router.get("/product/:id", isloggedin, async (req, res) => {
 	try {
 		const product = await productModel.findById(req.params.id);
 		const user = await userModel.findOne({ email: req.user.email });
-		
+
 		if (!product) {
 			req.flash("error", "Product not found");
 			return res.redirect("/shop");
 		}
-		
+
 		// Check if user has already submitted a review for this product
 		const Review = require('../models/review-model');
 		const existingReview = await Review.findOne({
 			productId: req.params.id,
 			userId: user._id
 		});
-		
-		res.render("product-detail", { 
-			product, 
-			loggedin: true, 
+
+		res.render("product-detail", {
+			product,
+			loggedin: true,
 			hasSubmittedReview: !!existingReview,
 			user
 		});
@@ -357,20 +357,20 @@ router.get("/shop", isloggedin, async (req, res) => {
 	try {
 		let query = {};
 		let sort = {};
-		
+
 		// Handle category filter
 		if (req.query.category) {
 			if (req.query.category === 'new') {
 				// For new collection, you might want to filter by recent date or specific tag
 				// This is a placeholder - adjust based on your product model
-				query.createdAt = { $gte: new Date(Date.now() - 30*24*60*60*1000) }; // Last 30 days
+				query.createdAt = { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }; // Last 30 days
 			} else if (req.query.category === 'discounted') {
 				query.discount = { $gt: 0 };
 			} else {
 				query.category = req.query.category;
 			}
 		}
-		
+
 		// Handle filter parameter
 		if (req.query.filter) {
 			if (req.query.filter === 'available') {
@@ -379,10 +379,10 @@ router.get("/shop", isloggedin, async (req, res) => {
 				query.discount = { $gt: 0 };
 			}
 		}
-		
+
 		// Handle sorting
 		if (req.query.sortby) {
-			switch(req.query.sortby) {
+			switch (req.query.sortby) {
 				case 'popular':
 					// Placeholder for popularity sorting
 					sort = { createdAt: -1 }; // Default to newest
@@ -402,14 +402,14 @@ router.get("/shop", isloggedin, async (req, res) => {
 		} else {
 			sort = { createdAt: -1 }; // Default sorting
 		}
-		
+
 		// Fetch products from the database with filters and sorting
 		let products = await productModel.find(query).sort(sort);
 		let success = req.flash("success");
-		
+
 		// Pass filter parameters to the view
-		res.render("shop", { 
-			products, 
+		res.render("shop", {
+			products,
 			success,
 			category: req.query.category || '',
 			filter: req.query.filter || '',
@@ -457,36 +457,36 @@ router.get("/cart", isloggedin, async (req, res) => {
 
 // Add to cart route
 router.get("/addtocart/:productid", isloggedin, async (req, res) => {
-    try {
-        // Find the user and add the product to their cart
-        let user = await userModel.findOne({ email: req.user.email });
-        // Check if product already in cart
-        if (!user.cart.includes(req.params.productid)) {
-            user.cart.push(req.params.productid);
-            // Check if the request is coming from wishlist (referer contains 'wishlist')
-            const referer = req.get('Referer');
-            const fromWishlist = referer && referer.includes('/wishlist');
-            
-            // If coming from wishlist, also remove from wishlist
-            if (fromWishlist && user.wishlist.includes(req.params.productid)) {
-                user.wishlist = user.wishlist.filter(id => id.toString() !== req.params.productid);
-            }
-            
-            await user.save();
-            req.flash("success", "Added to cart");
-            
-            // If coming from wishlist, redirect to cart page
-            if (fromWishlist) {
-                return res.redirect("/cart");
-            }
-        } else {
-            req.flash("success", "Product already in cart");
-        }
-        res.redirect("/shop");
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal Server Error");
-    }
+	try {
+		// Find the user and add the product to their cart
+		let user = await userModel.findOne({ email: req.user.email });
+		// Check if product already in cart
+		if (!user.cart.includes(req.params.productid)) {
+			user.cart.push(req.params.productid);
+			// Check if the request is coming from wishlist (referer contains 'wishlist')
+			const referer = req.get('Referer');
+			const fromWishlist = referer && referer.includes('/wishlist');
+
+			// If coming from wishlist, also remove from wishlist
+			if (fromWishlist && user.wishlist.includes(req.params.productid)) {
+				user.wishlist = user.wishlist.filter(id => id.toString() !== req.params.productid);
+			}
+
+			await user.save();
+			req.flash("success", "Added to cart");
+
+			// If coming from wishlist, redirect to cart page
+			if (fromWishlist) {
+				return res.redirect("/cart");
+			}
+		} else {
+			req.flash("success", "Product already in cart");
+		}
+		res.redirect("/shop");
+	} catch (error) {
+		console.error(error);
+		res.status(500).send("Internal Server Error");
+	}
 });
 
 // Remove from cart route
@@ -511,17 +511,12 @@ router.get("/checkout", isloggedin, async (req, res) => {
 			req.flash("error", "Your cart is empty");
 			return res.redirect("/cart");
 		}
-		let bill = 0;
-		user.cart.forEach(item => {
 		let subtotal = 0;
-user.cart.forEach(item => {
-	subtotal += Number(item.price || 0);
-});
-
-let bill = subtotal + 20;
-
+		user.cart.forEach(item => {
+			subtotal += Number(item.price || 0);
 		});
-		
+		let bill = subtotal + 20;
+
 		// Apply coupon discount if exists
 		let finalBill = bill;
 		let couponDiscount = 0;
@@ -530,7 +525,7 @@ let bill = subtotal + 20;
 			finalBill = bill - couponDiscount;
 			if (finalBill < 0) finalBill = 0;
 		}
-		
+
 		res.render("checkout", { user, bill, finalBill, couponDiscount, appliedCoupon: req.session.appliedCoupon, loggedin: true });
 	} catch (error) {
 		console.error(error);
@@ -636,7 +631,7 @@ router.post("/update-profile", isloggedin, async (req, res) => {
 			{ contact, address },
 			{ new: true }
 		);
-		
+
 		if (user) {
 			return res.json({
 				success: true,
@@ -662,32 +657,32 @@ router.post("/change-password", isloggedin, async (req, res) => {
 	try {
 		const { currentPassword, newPassword } = req.body;
 		const user = await userModel.findOne({ email: req.user.email });
-		
+
 		if (!user) {
 			return res.json({
 				success: false,
 				message: "User not found"
 			});
 		}
-		
+
 		// Check if current password is correct
 		const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
-		
+
 		if (!isPasswordCorrect) {
 			return res.json({
 				success: false,
 				message: "Current password is incorrect"
 			});
 		}
-		
+
 		// Hash new password
 		const saltRounds = 10;
 		const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-		
+
 		// Update password
 		user.password = hashedPassword;
 		await user.save();
-		
+
 		return res.json({
 			success: true,
 			message: "Password changed successfully"
@@ -717,7 +712,7 @@ router.post("/add-to-wishlist/:productid", isloggedin, async (req, res) => {
 	try {
 		const user = await userModel.findOne({ email: req.user.email });
 		const productId = req.params.productid;
-		
+
 		// Check if product is already in wishlist
 		if (!user.wishlist.includes(productId)) {
 			user.wishlist.push(productId);
@@ -736,47 +731,47 @@ router.post("/add-to-wishlist/:productid", isloggedin, async (req, res) => {
 		console.error(error);
 		return res.json({
 			success: false,
-				message: "Error adding to wishlist"
+			message: "Error adding to wishlist"
 		});
 	}
 });
 
 // Add to wishlist (GET route for direct link clicks)
 router.get("/add-to-wishlist/:productid", isloggedin, async (req, res) => {
-    try {
-        const user = await userModel.findOne({ email: req.user.email });
-        const productId = req.params.productid;
-        
-        // Validate that productId is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(productId)) {
-            req.flash("error", "Invalid product ID");
-            return res.redirect("/shop");
-        }
+	try {
+		const user = await userModel.findOne({ email: req.user.email });
+		const productId = req.params.productid;
 
-        // Check if product is already in wishlist
-        if (!user.wishlist.includes(productId)) {
-            user.wishlist.push(productId);
-            await user.save();
-            req.flash("success", "Added to wishlist");
-        } else {
-            req.flash("error", "Product already in wishlist");
-        }
-        
-        // Check referer to determine where to redirect
-        const referer = req.get('Referer');
-        if (referer && referer.includes('/product/')) {
-            // If coming from product detail page, redirect back to product page
-            res.redirect(referer);
-        } else {
-            // Otherwise, redirect to wishlist page
-            res.redirect("/wishlist");
-        }
-    } catch (error) {
-        console.error(error);
-        req.flash("error", "Error adding to wishlist");
-        // Redirect to shop page on error
-        res.redirect("/shop");
-    }
+		// Validate that productId is a valid ObjectId
+		if (!mongoose.Types.ObjectId.isValid(productId)) {
+			req.flash("error", "Invalid product ID");
+			return res.redirect("/shop");
+		}
+
+		// Check if product is already in wishlist
+		if (!user.wishlist.includes(productId)) {
+			user.wishlist.push(productId);
+			await user.save();
+			req.flash("success", "Added to wishlist");
+		} else {
+			req.flash("error", "Product already in wishlist");
+		}
+
+		// Check referer to determine where to redirect
+		const referer = req.get('Referer');
+		if (referer && referer.includes('/product/')) {
+			// If coming from product detail page, redirect back to product page
+			res.redirect(referer);
+		} else {
+			// Otherwise, redirect to wishlist page
+			res.redirect("/wishlist");
+		}
+	} catch (error) {
+		console.error(error);
+		req.flash("error", "Error adding to wishlist");
+		// Redirect to shop page on error
+		res.redirect("/shop");
+	}
 });
 
 // Remove from wishlist
@@ -784,10 +779,10 @@ router.get("/remove-from-wishlist/:productid", isloggedin, async (req, res) => {
 	try {
 		const user = await userModel.findOne({ email: req.user.email });
 		const productId = req.params.productid;
-		
+
 		user.wishlist = user.wishlist.filter(id => id.toString() !== productId);
 		await user.save();
-		
+
 		req.flash("success", "Removed from wishlist");
 		res.redirect("/wishlist");
 	} catch (error) {
@@ -824,12 +819,12 @@ router.get("/my-reviews", isloggedin, async (req, res) => {
 	try {
 		const user = await userModel.findOne({ email: req.user.email });
 		const Review = require('../models/review-model');
-		
+
 		// Get reviews submitted by this user
 		const userReviews = await Review.find({ userId: user._id })
 			.populate('productId')
 			.sort({ date: -1 });
-		
+
 		res.render("myReviews", { user, userReviews, loggedin: true });
 	} catch (error) {
 		console.error(error);
@@ -840,109 +835,109 @@ router.get("/my-reviews", isloggedin, async (req, res) => {
 // API endpoint to get reviews for a product
 // Fetch reviews
 router.get("/api/reviews/:productId", async (req, res) => {
-    try {
-        const Review = require("../models/review-model");
+	try {
+		const Review = require("../models/review-model");
 
-        const reviews = await Review.find({ productId: req.params.productId })
-            .populate("userId", "fullName email")
-            .sort({ createdAt: -1 }); // ✅ FIXED
+		const reviews = await Review.find({ productId: req.params.productId })
+			.populate("userId", "fullName email")
+			.sort({ createdAt: -1 }); // ✅ FIXED
 
-        let totalRating = 0;
-        reviews.forEach(r => totalRating += r.rating);
+		let totalRating = 0;
+		reviews.forEach(r => totalRating += r.rating);
 
-        const averageRating =
-            reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+		const averageRating =
+			reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
 
-        res.json({
-            reviews,
-            averageRating: parseFloat(averageRating),
-            totalReviews: reviews.length,
-        });
-    } catch (error) {
-        res.status(500).json({ error: "Failed to fetch reviews" });
-    }
+		res.json({
+			reviews,
+			averageRating: parseFloat(averageRating),
+			totalReviews: reviews.length,
+		});
+	} catch (error) {
+		res.status(500).json({ error: "Failed to fetch reviews" });
+	}
 });
 
 
 // Submit Review
 router.post("/submit-review/:productId", isloggedin, async (req, res) => {
-    try {
-        const Review = require("../models/review-model");
-        const { rating, title, comment } = req.body;
+	try {
+		const Review = require("../models/review-model");
+		const { rating, title, comment } = req.body;
 
-        if (!rating || !title || !comment) {
-            return res.json({
-                success: false,
-                message: "Please fill in all review fields",
-            });
-        }
+		if (!rating || !title || !comment) {
+			return res.json({
+				success: false,
+				message: "Please fill in all review fields",
+			});
+		}
 
-        // ✅ Rating validation
-        const ratingValue = parseInt(rating);
-        if (ratingValue < 1 || ratingValue > 5) {
-            return res.json({
-                success: false,
-                message: "Rating must be between 1 and 5",
-            });
-        }
+		// ✅ Rating validation
+		const ratingValue = parseInt(rating);
+		if (ratingValue < 1 || ratingValue > 5) {
+			return res.json({
+				success: false,
+				message: "Rating must be between 1 and 5",
+			});
+		}
 
-        const user = await userModel.findOne({ email: req.user.email });
+		const user = await userModel.findOne({ email: req.user.email });
 
-        const existingReview = await Review.findOne({
-            productId: req.params.productId,
-            userId: user._id,
-        });
+		const existingReview = await Review.findOne({
+			productId: req.params.productId,
+			userId: user._id,
+		});
 
-        if (existingReview) {
-            return res.json({
-                success: false,
-                message: "You have already reviewed this product",
-            });
-        }
+		if (existingReview) {
+			return res.json({
+				success: false,
+				message: "You have already reviewed this product",
+			});
+		}
 
-        const hasPurchased = user.purchases.some(
-            p => p.productId.toString() === req.params.productId
-        );
+		const hasPurchased = user.purchases.some(
+			p => p.productId.toString() === req.params.productId
+		);
 
-        if (!hasPurchased) {
-            return res.json({
-                success: false,
-                message: "You must purchase this product before reviewing it",
-            });
-        }
+		if (!hasPurchased) {
+			return res.json({
+				success: false,
+				message: "You must purchase this product before reviewing it",
+			});
+		}
 
-        const newReview = new Review({
-            productId: req.params.productId,
-            userId: user._id,
-            userName: user.fullName || user.email.split("@")[0],
-            rating: ratingValue,
-            title,
-            comment,
-        });
+		const newReview = new Review({
+			productId: req.params.productId,
+			userId: user._id,
+			userName: user.fullName || user.email.split("@")[0],
+			rating: ratingValue,
+			title,
+			comment,
+		});
 
-        await newReview.save();
+		await newReview.save();
 
-        res.json({
-            success: true,
-            message: "Review submitted successfully",
-            review: newReview,
-        });
+		res.json({
+			success: true,
+			message: "Review submitted successfully",
+			review: newReview,
+		});
 
-    } catch (error) {
+	} catch (error) {
 
-        // ✅ Duplicate review error handling
-        if (error.code === 11000) {
-            return res.json({
-                success: false,
-                message: "You already reviewed this product",
-            });
-        }
+		// ✅ Duplicate review error handling
+		if (error.code === 11000) {
+			return res.json({
+				success: false,
+				message: "You already reviewed this product",
+			});
+		}
 
-        res.json({
-            success: false,
-            message: "An error occurred while submitting your review",
-        });
-    }
+		res.json({
+			success: false,
+			message: "An error occurred while submitting your review",
+		});
+	}
 });
 
 // Logout route - use the logout function from authController

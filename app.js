@@ -10,9 +10,9 @@ const productsRouter = require("./routes/productsRouter.js");
 const indexRouter = require("./routes/index.js");
 const setUser = require("./middleware/setUser");
 const morgan = require("morgan");
-const paymentRouter = require("./routes/paymentRouter");
 
 require("dotenv").config();
+const paymentRouter = require("./routes/paymentRouter");
 require("./config/mongoose-connection.js");
 
 const ownerModel = require('./models/owner-model');
@@ -59,7 +59,7 @@ async function createSampleCoupons() {
                             discountType: 'percentage',
                             discountValue: 10,
                             minOrderAmount: 500,
-                            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+                            expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 30 days from now
                             isActive: true
                         };
                         break;
