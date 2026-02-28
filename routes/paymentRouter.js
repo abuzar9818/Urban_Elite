@@ -5,12 +5,21 @@ const crypto = require("crypto");
 const router = express.Router();
 const userModel = require("../models/user-model");
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+let razorpay;
+
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    console.error("Razorpay keys missing!");
+} else {
+    razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+}
 
 router.post("/create-order", async (req, res) => {
+    if (!razorpay) {
+    return res.status(500).json({ error: "Payment service not configured" });
+}
     try {
         const { amount } = req.body;
 

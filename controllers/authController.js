@@ -63,13 +63,13 @@ module.exports.loginUser = async (req, res) => {
 
 		if (!email || !password) {
 			req.flash("error", "Email and password are required.");
-			return res.redirect("/users/login");
+			return req.session.save(() => res.redirect("/users/login"));
 		}
 
 		const user = await userModel.findOne({ email: email });
 		if (!user) {
-			req.flash("error", "Email or password incorrect");
-			return res.redirect("/users/login");
+			req.flash("error", "something went wrong");
+			return req.session.save(() => res.redirect("/users/login"));
 		}
 
 		if (!user.password || (!user.password.startsWith('$2') && user.password.length < 50)) {
@@ -92,7 +92,7 @@ module.exports.loginUser = async (req, res) => {
 			});
 			return;
 		}
-        
+
 		bcrypt.compare(password, user.password, (err, result) => {
 			if (err) {
 				console.error("Error comparing password:", err);
@@ -105,10 +105,10 @@ module.exports.loginUser = async (req, res) => {
 				const token = generateToken(user);
 				res.cookie("token", token);
 				req.flash("success", "Login successful!");
-				res.redirect("/home");
+				return req.session.save(() => res.redirect("/home"));
 			} else {
-				req.flash("error", "Email or password incorrect");
-				return res.redirect("/users/login");
+				req.flash("error", "something went wrong");
+				return req.session.save(() => res.redirect("/users/login"));
 			}
 		});
 	} catch (error) {
