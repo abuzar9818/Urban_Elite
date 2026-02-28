@@ -38,8 +38,9 @@
                                     <div class="w-full h-64 flex items-center justify-center"
                                         style="background-color:<%= product.bgcolor || '#FAFAFA' %>">
                                         <% if(product.image){ %>
-                                            <img class="h-full w-auto object-contain" src="<%= product.image %>"
-                                                alt="<%= product.name %>">
+                                            <img class="h-full w-auto object-contain"
+                                                src="<%= product.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                                                alt="<%= product.name %>" loading="lazy">
                                             <% } else { %>
                                                 <p class="text-gray-400">No Image Available</p>
                                                 <% } %>

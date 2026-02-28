@@ -90,7 +90,8 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         <% products.forEach(function(product, index){ %>
                                             <div class="w-full">
-                                                <div class="product-card-item rounded-lg shadow-md transition-all duration-300 overflow-hidden transform hover:-translate-y-1 product-card group flex flex-col h-full <%= (!product.stock || product.stock <= 0) ? 'out-of-stock' : '' %>">
+                                                <div
+                                                    class="product-card-item rounded-lg shadow-md transition-all duration-300 overflow-hidden transform hover:-translate-y-1 product-card group flex flex-col h-full <%= (!product.stock || product.stock <= 0) ? 'out-of-stock' : '' %>">
 
 
                                                     <!-- Product Image -->
@@ -99,8 +100,8 @@
                                                             style="background-color:<%= product.bgcolor || '#ffffff' %>;">
                                                             <% if(product.image){ %>
                                                                 <img class="h-[12rem] w-auto object-contain"
-                                                                    src="<%= product.image %>"
-                                                                    alt="<%= product.name %>">
+                                                                    src="<%= product.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                                                                    alt="<%= product.name %>" loading="lazy">
                                                                 <% } else { %>
                                                                     <div class="text-gray-400">No Image</div>
                                                                     <% } %>
@@ -119,7 +120,8 @@
                                                             <% let originalPrice=product.price + (product.discount ||
                                                                 0); let finalPrice=product.price; %>
 
-                                                               <div class="flex flex-col h-[68px] justify-start leading-tight">
+                                                                <div
+                                                                    class="flex flex-col h-[68px] justify-start leading-tight">
 
                                                                     <!-- Final Price -->
                                                                     <h4 class="text-xl font-bold">₹ <%= finalPrice %>

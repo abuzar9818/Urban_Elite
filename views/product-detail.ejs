@@ -19,8 +19,9 @@
                 <div class="w-full h-96 md:h-[550px] flex items-center justify-center p-8"
                     style="background-color: <%= product.bgcolor || '#ffffff' %>">
                     <% if(product.image){ %>
-                        <img class="max-h-full w-auto object-contain drop-shadow-2xl" src="<%= product.image %>"
-                            alt="<%= product.name %>">
+                        <img class="max-h-full w-auto object-contain drop-shadow-2xl"
+                            src="<%= product.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                            alt="<%= product.name %>" loading="lazy">
                         <% } else { %>
                             <div class="text-gray-400 text-lg">
                                 <i class="ri-image-line text-6xl mb-2"></i>
@@ -294,20 +295,21 @@
                                 </button>
                             </form>
                         </div>
-                    <% } else if(hasSubmittedReview) { %>
-                        <!-- Message shown when user has already submitted a review -->
-                        <div class="mt-8 p-6 bg-green-50 rounded-xl text-center border border-green-200">
-                            <i class="ri-checkbox-circle-line text-4xl text-green-600 mb-4"></i>
-                            <p class="text-green-800 font-semibold">Thank you for your review!</p>
-                            <p class="text-green-600 mt-2">You have already submitted a review for this product.</p>
-                        </div>
-                    <% } else { %>
-                        <!-- Message shown when user hasn't purchased the product -->
-                        <div class="mt-8 p-6 bg-gray-50 rounded-xl text-center border border-gray-200">
-                            <i class="ri-shopping-cart-line text-4xl text-gray-400 mb-4"></i>
-                            <p class="text-gray-600">Only customers who have purchased this product can submit a review.</p>
-                        </div>
-                    <% } %>
+                        <% } else if(hasSubmittedReview) { %>
+                            <!-- Message shown when user has already submitted a review -->
+                            <div class="mt-8 p-6 bg-green-50 rounded-xl text-center border border-green-200">
+                                <i class="ri-checkbox-circle-line text-4xl text-green-600 mb-4"></i>
+                                <p class="text-green-800 font-semibold">Thank you for your review!</p>
+                                <p class="text-green-600 mt-2">You have already submitted a review for this product.</p>
+                            </div>
+                            <% } else { %>
+                                <!-- Message shown when user hasn't purchased the product -->
+                                <div class="mt-8 p-6 bg-gray-50 rounded-xl text-center border border-gray-200">
+                                    <i class="ri-shopping-cart-line text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-600">Only customers who have purchased this product can submit a
+                                        review.</p>
+                                </div>
+                                <% } %>
                 </div>
             </div>
         </div>
@@ -319,29 +321,29 @@
     <%- include('./partials/footer') %>
 
         <script>
-document.addEventListener("DOMContentLoaded", function () {
+            document.addEventListener("DOMContentLoaded", function () {
 
-    const productId = "<%= product._id %>";
+                const productId = "<%= product._id %>";
 
-    // ✅ Fetch reviews
-    function loadReviews() {
-        fetch(`/api/reviews/${productId}`)
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById("reviews-container");
+                // ✅ Fetch reviews
+                function loadReviews() {
+                    fetch(`/api/reviews/${productId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const container = document.getElementById("reviews-container");
 
-                if (!data.reviews || data.reviews.length === 0) {
-                    container.innerHTML = `
+                            if (!data.reviews || data.reviews.length === 0) {
+                                container.innerHTML = `
                         <p class="text-gray-500 text-sm text-center">
                             No reviews yet. Be the first!
                         </p>`;
-                    return;
-                }
+                                return;
+                            }
 
-                container.innerHTML = "";
+                            container.innerHTML = "";
 
-                data.reviews.forEach(review => {
-                    container.innerHTML += `
+                            data.reviews.forEach(review => {
+                                container.innerHTML += `
                         <div class="p-5 bg-gray-50 rounded-xl">
                             <div class="flex justify-between">
                                 <h4 class="font-medium text-gray-900">
@@ -355,126 +357,126 @@ document.addEventListener("DOMContentLoaded", function () {
                             <p class="text-sm text-gray-600">${review.comment}</p>
                         </div>
                     `;
-                });
-            });
-    }
-
-    loadReviews();
-
-
-    // ✅ Star Rating
-    const stars = document.querySelectorAll(".star-label");
-    const radios = document.querySelectorAll("input[name='rating']");
-
-    stars.forEach((star, index) => {
-        star.addEventListener("click", () => {
-            radios[index].checked = true;
-
-            stars.forEach((s, i) => {
-                if (i <= index) {
-                    s.classList.add("text-yellow-400");
-                    s.classList.remove("text-gray-300");
-                } else {
-                    s.classList.add("text-gray-300");
-                    s.classList.remove("text-yellow-400");
+                            });
+                        });
                 }
-            });
-        });
-    });
+
+                loadReviews();
 
 
-    // ✅ Review Form Submit
-    const form = document.getElementById("reviewForm");
+                // ✅ Star Rating
+                const stars = document.querySelectorAll(".star-label");
+                const radios = document.querySelectorAll("input[name='rating']");
 
-    if (form) {
-        form.addEventListener("submit", async function (e) {
-            e.preventDefault();
+                stars.forEach((star, index) => {
+                    star.addEventListener("click", () => {
+                        radios[index].checked = true;
 
-            const formData = new FormData(form);
-
-            const res = await fetch(`/submit-review/${productId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    rating: formData.get("rating"),
-                    title: formData.get("title"),
-                    comment: formData.get("comment")
-                })
-            });
-
-            const result = await res.json();
-
-            if (result.success) {
-                alert("✅ Review submitted!");
-                location.reload(); // ✅ Review becomes visible instantly
-            } else {
-                alert("❌ " + result.message);
-            }
-        });
-    }
-    
-    // Review form submission
-    const reviewForm = document.getElementById('reviewForm');
-    if (reviewForm) {
-        reviewForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const productId = '<%= product._id %>';
-            
-            // Get rating value (check both form data and radio buttons)
-            let ratingValue = formData.get('rating');
-            if (!ratingValue) {
-                const checkedRadio = document.querySelector('input[name="rating"]:checked');
-                if (checkedRadio) {
-                    ratingValue = checkedRadio.value;
-                }
-            }
-            
-            const reviewData = {
-                rating: ratingValue,
-                title: formData.get('title'),
-                comment: formData.get('comment')
-            };
-            
-            console.log('Submitting review:', reviewData);
-            
-            try {
-                const response = await fetch(`/submit-review/${productId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(reviewData)
-                });
-                
-                const result = await response.json();
-                console.log('Review submission result:', result);
-                
-                if (result.success) {
-                    // Show success message (form will be removed server-side on next load)
-                    showFlashMessage(result.message, 'success');
-                    
-                    // Display the submitted review immediately in the reviews container
-                    if (result.review) {
-                        // Create review element to insert at the top of reviews
-                        const reviewElement = document.createElement('div');
-                        reviewElement.className = 'p-6 bg-gray-50 rounded-xl animate-fade-in';
-                        
-                        // Create star rating HTML
-                        let starsHTML = '';
-                        for (let i = 1; i <= 5; i++) {
-                            if (i <= result.review.rating) {
-                                starsHTML += '<i class="ri-star-fill text-yellow-400"></i>';
+                        stars.forEach((s, i) => {
+                            if (i <= index) {
+                                s.classList.add("text-yellow-400");
+                                s.classList.remove("text-gray-300");
                             } else {
-                                starsHTML += '<i class="ri-star-line text-gray-300"></i>';
+                                s.classList.add("text-gray-300");
+                                s.classList.remove("text-yellow-400");
+                            }
+                        });
+                    });
+                });
+
+
+                // ✅ Review Form Submit
+                const form = document.getElementById("reviewForm");
+
+                if (form) {
+                    form.addEventListener("submit", async function (e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(form);
+
+                        const res = await fetch(`/submit-review/${productId}`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                rating: formData.get("rating"),
+                                title: formData.get("title"),
+                                comment: formData.get("comment")
+                            })
+                        });
+
+                        const result = await res.json();
+
+                        if (result.success) {
+                            alert("✅ Review submitted!");
+                            location.reload(); // ✅ Review becomes visible instantly
+                        } else {
+                            alert("❌ " + result.message);
+                        }
+                    });
+                }
+
+                // Review form submission
+                const reviewForm = document.getElementById('reviewForm');
+                if (reviewForm) {
+                    reviewForm.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(this);
+                        const productId = '<%= product._id %>';
+
+                        // Get rating value (check both form data and radio buttons)
+                        let ratingValue = formData.get('rating');
+                        if (!ratingValue) {
+                            const checkedRadio = document.querySelector('input[name="rating"]:checked');
+                            if (checkedRadio) {
+                                ratingValue = checkedRadio.value;
                             }
                         }
-                        
-                        // Get first letter of username for avatar
-                        const firstLetter = result.review.userName ? result.review.userName.charAt(0).toUpperCase() : 'U';
-                        
-                        reviewElement.innerHTML = `
+
+                        const reviewData = {
+                            rating: ratingValue,
+                            title: formData.get('title'),
+                            comment: formData.get('comment')
+                        };
+
+                        console.log('Submitting review:', reviewData);
+
+                        try {
+                            const response = await fetch(`/submit-review/${productId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(reviewData)
+                            });
+
+                            const result = await response.json();
+                            console.log('Review submission result:', result);
+
+                            if (result.success) {
+                                // Show success message (form will be removed server-side on next load)
+                                showFlashMessage(result.message, 'success');
+
+                                // Display the submitted review immediately in the reviews container
+                                if (result.review) {
+                                    // Create review element to insert at the top of reviews
+                                    const reviewElement = document.createElement('div');
+                                    reviewElement.className = 'p-6 bg-gray-50 rounded-xl animate-fade-in';
+
+                                    // Create star rating HTML
+                                    let starsHTML = '';
+                                    for (let i = 1; i <= 5; i++) {
+                                        if (i <= result.review.rating) {
+                                            starsHTML += '<i class="ri-star-fill text-yellow-400"></i>';
+                                        } else {
+                                            starsHTML += '<i class="ri-star-line text-gray-300"></i>';
+                                        }
+                                    }
+
+                                    // Get first letter of username for avatar
+                                    const firstLetter = result.review.userName ? result.review.userName.charAt(0).toUpperCase() : 'U';
+
+                                    reviewElement.innerHTML = `
                             <div class="flex items-start gap-4">
                                 <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
                                     ${firstLetter}
@@ -492,94 +494,93 @@ document.addEventListener("DOMContentLoaded", function () {
                                 </div>
                             </div>
                         `;
-                        
-                        // Find the reviews container and prepend the new review
-                        const reviewsContainer = document.querySelector('#reviews-container');
-                        if (reviewsContainer) {
-                            reviewsContainer.insertBefore(reviewElement, reviewsContainer.firstChild);
-                        }
-                    }
-                    
-                    // Hide the review form section after successful submission
-                    const reviewFormSection = document.querySelector('#reviewForm').closest('.mt-8.p-6.bg-white.rounded-xl.border.border-gray-200');
-                    if (reviewFormSection) {
-                        reviewFormSection.style.display = 'none';
-                    }
-                    
-                    // Show thank you message
-                    const thankYouDiv = document.createElement('div');
-                    thankYouDiv.className = 'mt-8 p-6 bg-green-50 rounded-xl text-center border border-green-200';
-                    thankYouDiv.innerHTML = `
+
+                                    // Find the reviews container and prepend the new review
+                                    const reviewsContainer = document.querySelector('#reviews-container');
+                                    if (reviewsContainer) {
+                                        reviewsContainer.insertBefore(reviewElement, reviewsContainer.firstChild);
+                                    }
+                                }
+
+                                // Hide the review form section after successful submission
+                                const reviewFormSection = document.querySelector('#reviewForm').closest('.mt-8.p-6.bg-white.rounded-xl.border.border-gray-200');
+                                if (reviewFormSection) {
+                                    reviewFormSection.style.display = 'none';
+                                }
+
+                                // Show thank you message
+                                const thankYouDiv = document.createElement('div');
+                                thankYouDiv.className = 'mt-8 p-6 bg-green-50 rounded-xl text-center border border-green-200';
+                                thankYouDiv.innerHTML = `
                         <i class="ri-checkbox-circle-line text-4xl text-green-600 mb-4"></i>
                         <p class="text-green-800 font-semibold">Thank you for your review!</p>
                         <p class="text-green-600 mt-2">Your review has been published successfully.</p>
                         <p class="text-green-600 mt-2">You have already submitted a review for this product.</p>
                     `;
-                    
-                    // Insert thank you message after the reviews container
-                    const reviewsContainer = document.getElementById('reviews-container');
-                    if (reviewsContainer) {
-                        reviewsContainer.parentNode.insertBefore(thankYouDiv, reviewsContainer.nextSibling);
-                    }
-                    
-                    // Update the average rating display
-                    updateAverageRating();
-                    
-                } else {
-                    // Show error message
-                    showFlashMessage(result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Error submitting review:', error);
-                showFlashMessage('An error occurred while submitting your review', 'error');
-            }
-        });
-    }
-    
-    // Helper function to show flash messages
-    function showFlashMessage(message, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg shadow-lg animate-fade-in ${
-            type === 'success' ? 'bg-green-500' : 'bg-red-500'
-        }`;
-        messageDiv.innerHTML = `<span class="inline-block text-white font-medium">${message}</span>`;
-        document.body.appendChild(messageDiv);
-        
-        // Auto-remove message after 3 seconds
-        setTimeout(() => {
-            messageDiv.remove();
-        }, 3000);
-    }
-    
-    // Helper function to update average rating
-    function updateAverageRating() {
-        // Count total reviews and calculate new average
-        const reviewElements = document.querySelectorAll('.space-y-6 > div');
-        if (reviewElements.length === 0) return;
-        
-        let totalRating = 0;
-        reviewElements.forEach(element => {
-            // Extract rating from star elements - this would need adjustment based on actual structure
-            const starElements = element.querySelectorAll('.text-yellow-400');
-            if (starElements.length > 0) {
-                totalRating += starElements.length;
-            }
-        });
-        
-        const averageRating = (totalRating / reviewElements.length).toFixed(1);
-        
-        // Update average rating display
-        const avgRatingElement = document.querySelector('.text-4xl.font-bold.text-purple-600');
-        if (avgRatingElement) {
-            avgRatingElement.textContent = averageRating;
-        }
-        
-        // Update review count
-        const reviewCountElement = document.querySelector('.text-gray-600');
-        if (reviewCountElement) {
-            reviewCountElement.textContent = `Based on ${reviewElements.length} reviews`;
-        }
-    }
 
-});
-</script>
+                                // Insert thank you message after the reviews container
+                                const reviewsContainer = document.getElementById('reviews-container');
+                                if (reviewsContainer) {
+                                    reviewsContainer.parentNode.insertBefore(thankYouDiv, reviewsContainer.nextSibling);
+                                }
+
+                                // Update the average rating display
+                                updateAverageRating();
+
+                            } else {
+                                // Show error message
+                                showFlashMessage(result.message, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Error submitting review:', error);
+                            showFlashMessage('An error occurred while submitting your review', 'error');
+                        }
+                    });
+                }
+
+                // Helper function to show flash messages
+                function showFlashMessage(message, type) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg shadow-lg animate-fade-in ${type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                        }`;
+                    messageDiv.innerHTML = `<span class="inline-block text-white font-medium">${message}</span>`;
+                    document.body.appendChild(messageDiv);
+
+                    // Auto-remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+                }
+
+                // Helper function to update average rating
+                function updateAverageRating() {
+                    // Count total reviews and calculate new average
+                    const reviewElements = document.querySelectorAll('.space-y-6 > div');
+                    if (reviewElements.length === 0) return;
+
+                    let totalRating = 0;
+                    reviewElements.forEach(element => {
+                        // Extract rating from star elements - this would need adjustment based on actual structure
+                        const starElements = element.querySelectorAll('.text-yellow-400');
+                        if (starElements.length > 0) {
+                            totalRating += starElements.length;
+                        }
+                    });
+
+                    const averageRating = (totalRating / reviewElements.length).toFixed(1);
+
+                    // Update average rating display
+                    const avgRatingElement = document.querySelector('.text-4xl.font-bold.text-purple-600');
+                    if (avgRatingElement) {
+                        avgRatingElement.textContent = averageRating;
+                    }
+
+                    // Update review count
+                    const reviewCountElement = document.querySelector('.text-gray-600');
+                    if (reviewCountElement) {
+                        reviewCountElement.textContent = `Based on ${reviewElements.length} reviews`;
+                    }
+                }
+
+            });
+        </script>

@@ -47,28 +47,27 @@
                                         <% order.items.forEach(function(item){ %>
                                             <div class="flex items-center gap-4">
                                                 <% if(item.image) { %>
-                                                    <img src="<%= item.image %>" alt="<%= item.name %>"
-                                                        class="w-16 h-16 object-contain"
-                                                        style="background-color: <%= item.bgcolor || '#FAFAFA' %>;">
-                                                    <% } else { %>
-                                                        <div class="w-16 h-16 flex items-center justify-center"
-                                                            style="background-color: #FAFAFA;">
-                                                            <i class="ri-image-line text-gray-400"></i>
+                                                    <img src="<%= item.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                                                        alt="<%= item.name %>" class="w-16 h-16 object-contain"
+                                                        loading="lazy" <% } else { %>
+                                                    <div class="w-16 h-16 flex items-center justify-center"
+                                                        style="background-color: #FAFAFA;">
+                                                        <i class="ri-image-line text-gray-400"></i>
+                                                    </div>
+                                                    <% } %>
+                                                        <div>
+                                                            <h4 class="font-medium" style="color: #1E1E1E;">
+                                                                <%= item.name %>
+                                                            </h4>
+                                                            <% let qty=item.quantity || 1; let finalPrice=item.price; //
+                                                                already discounted final price let lineTotal=qty *
+                                                                finalPrice; %>
+
+                                                                <p style="color:#666;">
+                                                                    Qty: <%= qty %> × ₹<%= finalPrice %>
+                                                                </p>
+
                                                         </div>
-                                                        <% } %>
-                                                            <div>
-                                                                <h4 class="font-medium" style="color: #1E1E1E;">
-                                                                    <%= item.name %>
-                                                                </h4>
-                                                                <% let qty=item.quantity || 1; 
-                                                                let finalPrice=item.price; // already discounted final price 
-                                                                    let lineTotal=qty * finalPrice; %>
-
-                                                                    <p style="color:#666;">
-                                                                        Qty: <%= qty %> × ₹<%= finalPrice %>
-                                                                    </p>
-
-                                                            </div>
                                             </div>
                                             <% }) %>
                                                 <% } else { %>
@@ -82,19 +81,18 @@
                                     </p>
                                     <div class="flex gap-2">
                                         <a href="/order/<%= order.id %>"
-   class="px-4 py-2 rounded-lg text-white text-sm transition-colors"
-   style="background-color:#B76E79;"
-   onmouseover="this.style.backgroundColor='#A05A66'"
-   onmouseout="this.style.backgroundColor='#B76E79'">
-   View Order Details
-</a>
+                                            class="px-4 py-2 rounded-lg text-white text-sm transition-colors"
+                                            style="background-color:#B76E79;"
+                                            onmouseover="this.style.backgroundColor='#A05A66'"
+                                            onmouseout="this.style.backgroundColor='#B76E79'">
+                                            View Order Details
+                                        </a>
 
-                                        
-                                     <button onclick="openReviewSelector('<%= order.id %>')"
-                                class="px-4 py-2 rounded text-white text-sm"
-                                style="background:#2563EB;">
-                            Review
-                        </button>
+
+                                        <button onclick="openReviewSelector('<%= order.id %>')"
+                                            class="px-4 py-2 rounded text-white text-sm" style="background:#2563EB;">
+                                            Review
+                                        </button>
 
                                         <button class="px-4 py-2 rounded-lg text-white text-sm transition-colors"
                                             style="background-color: #B76E79;"
@@ -117,24 +115,22 @@
     </div>
 
     <!-- Review Selector Modal -->
-                                        <div id="reviewModal"
-                                            class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-                                            <div class="bg-white rounded-xl p-6 w-80 shadow-xl">
+    <div id="reviewModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-80 shadow-xl">
 
-                                                <h3 class="text-lg font-semibold mb-4">Select product to review</h3>
+            <h3 class="text-lg font-semibold mb-4">Select product to review</h3>
 
-                                                <div id="reviewList" class="space-y-2"></div>
-                                                
+            <div id="reviewList" class="space-y-2"></div>
 
-                                                <button onclick="closeReviewModal()"
-                                                    class="mt-4 w-full py-2 rounded bg-gray-200 hover:bg-gray-300">
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
+
+            <button onclick="closeReviewModal()" class="mt-4 w-full py-2 rounded bg-gray-200 hover:bg-gray-300">
+                Cancel
+            </button>
+        </div>
+    </div>
 
     <script>
-        const ordersData = <%- JSON.stringify(user.orders || []) %>;
+        const ordersData = <% - JSON.stringify(user.orders || []) %>;
 
         function openReviewSelector(orderId) {
             const order = ordersData.find(o => o.id === orderId);

@@ -1,125 +1,143 @@
 <%- include('./partials/header', { isAdmin: true }) %>
 
-<% if(success && success.length>0){ %>
-    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-green-500 shadow-lg animate-fade-in">
-        <span class="inline-block text-white font-medium">
-            <%= Array.isArray(success) ? success[0] : success %>
-        </span>
-    </div>
-<% } %>
-
-<% if(error && error.length>0){ %>
-    <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-red-500 shadow-lg animate-fade-in">
-        <span class="inline-block text-white font-medium">
-            <%= Array.isArray(error) ? error[0] : error %>
-        </span>
-    </div>
-<% } %>
-
-<div class="container mx-auto px-4 md:px-8 py-8 flex-grow">
-    <div class="flex flex-col md:flex-row gap-8">
-        <!-- Sidebar -->
-        <div class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-6 h-fit">
-            <h3 class="text-xl font-bold mb-6 text-gray-800">Admin Panel</h3>
-            <div class="flex flex-col gap-3">
-                <a href="/owners/admin" class="px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors font-medium">
-                    <i class="ri-dashboard-line mr-2"></i>All Products
-                </a>
-                <a href="/owners/create-product" class="px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors font-medium">
-                    <i class="ri-add-circle-line mr-2"></i>Create New Product
-                </a>
-                <a href="/owners/logout" class="px-4 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors font-medium mt-4">
-                    <i class="ri-logout-box-line mr-2"></i>Logout
-                </a>
-            </div>
+    <% if(success && success.length>0){ %>
+        <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-green-500 shadow-lg animate-fade-in">
+            <span class="inline-block text-white font-medium">
+                <%= Array.isArray(success) ? success[0] : success %>
+            </span>
         </div>
+        <% } %>
 
-        <!-- Main Content -->
-        <main class="w-full md:w-3/4 bg-white rounded-lg shadow-md p-8">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Edit Product</h2>
-            <form autocomplete="off" action="/owners/update-product/<%= product._id %>?_method=PUT" method="post" class="space-y-6">
-                
-                <div class="bg-gray-50 p-6 rounded-lg">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-700">Product Details</h3>
-                    
-                    <div class="mb-4">
-                        <label class="block mb-2 font-medium text-gray-700">Product Image</label>
-                         <a href="/product/ <%= product._id %>" class="block">
-                                            <div class="w-full h-52 flex items-center justify-center rounded-t-lg overflow-hidden"
-                                                style="background-color:<%= product.bgcolor || '#ffffff' %>">
-                                                <% if(product.image){ %>
-                                                    <img class="h-[12rem] w-auto object-contain"
-                                                        src="<%= product.image %>" alt="<%= product.name %>">
-                                                    <% } else { %>
-                                                        <div class="text-gray-400">No Image</div>
-                                                        <% } %>
+            <% if(error && error.length>0){ %>
+                <div
+                    class="fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-red-500 shadow-lg animate-fade-in">
+                    <span class="inline-block text-white font-medium">
+                        <%= Array.isArray(error) ? error[0] : error %>
+                    </span>
+                </div>
+                <% } %>
+
+                    <div class="container mx-auto px-4 md:px-8 py-8 flex-grow">
+                        <div class="flex flex-col md:flex-row gap-8">
+                            <!-- Sidebar -->
+                            <div class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-6 h-fit">
+                                <h3 class="text-xl font-bold mb-6 text-gray-800">Admin Panel</h3>
+                                <div class="flex flex-col gap-3">
+                                    <a href="/owners/admin"
+                                        class="px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors font-medium">
+                                        <i class="ri-dashboard-line mr-2"></i>All Products
+                                    </a>
+                                    <a href="/owners/create-product"
+                                        class="px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors font-medium">
+                                        <i class="ri-add-circle-line mr-2"></i>Create New Product
+                                    </a>
+                                    <a href="/owners/logout"
+                                        class="px-4 py-2 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors font-medium mt-4">
+                                        <i class="ri-logout-box-line mr-2"></i>Logout
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Main Content -->
+                            <main class="w-full md:w-3/4 bg-white rounded-lg shadow-md p-8">
+                                <h2 class="text-2xl font-bold mb-6 text-gray-800">Edit Product</h2>
+                                <form autocomplete="off" action="/owners/update-product/<%= product._id %>?_method=PUT"
+                                    method="post" class="space-y-6">
+
+                                    <div class="bg-gray-50 p-6 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-4 text-gray-700">Product Details</h3>
+
+                                        <div class="mb-4">
+                                            <label class="block mb-2 font-medium text-gray-700">Product Image</label>
+                                            <a href="/product/ <%= product._id %>" class="block">
+                                                <div class="w-full h-52 flex items-center justify-center rounded-t-lg overflow-hidden"
+                                                    style="background-color:<%= product.bgcolor || '#ffffff' %>">
+                                                    <% if(product.image){ %>
+                                                        <img class="h-[12rem] w-auto object-contain"
+                                                            src="<%= product.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                                                            alt="<%= product.name %>" loading="lazy">
+                                                        <% } else { %>
+                                                            <div class="text-gray-400">No Image</div>
+                                                            <% } %>
+                                                </div>
+                                            </a>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block mb-2 font-medium text-gray-700">Product Name</label>
+                                                <input name="name" type="text" placeholder="e.g., Clinge Bag" required
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    value="<%= product.name %>">
                                             </div>
-                                        </a>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block mb-2 font-medium text-gray-700">Product Name</label>
-                            <input name="name" type="text" placeholder="e.g., Clinge Bag" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                value="<%= product.name %>">
-                        </div>
-                        <div>
-                            <label class="block mb-2 font-medium text-gray-700">Product Price (₹)</label>
-                            <input name="price" type="number" placeholder="1200" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                value="<%= product.price %>">
-                        </div>
-                        <div>
-                            <label class="block mb-2 font-medium text-gray-700">Discount (₹)</label>
-                            <input name="discount" type="number" placeholder="100" value="<%= product.discount || 0 %>"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block mb-2 font-medium text-gray-700">Stock Quantity</label>
-                            <input name="stock" type="number" placeholder="10" value="<%= product.stock || 0 %>"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block mb-2 font-medium text-gray-700">Product Description</label>
-                        <textarea name="description" placeholder="Enter product description..." rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"><%= product.description || '' %></textarea>
-                    </div>
-                </div>
+                                            <div>
+                                                <label class="block mb-2 font-medium text-gray-700">Product Price
+                                                    (₹)</label>
+                                                <input name="price" type="number" placeholder="1200" required
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    value="<%= product.price %>">
+                                            </div>
+                                            <div>
+                                                <label class="block mb-2 font-medium text-gray-700">Discount (₹)</label>
+                                                <input name="discount" type="number" placeholder="100"
+                                                    value="<%= product.discount || 0 %>"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label class="block mb-2 font-medium text-gray-700">Stock
+                                                    Quantity</label>
+                                                <input name="stock" type="number" placeholder="10"
+                                                    value="<%= product.stock || 0 %>"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            </div>
+                                        </div>
 
-                <div class="bg-gray-50 p-6 rounded-lg">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-700">Color Customization</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block mb-2 font-medium text-gray-700">Background Color</label>
-                            <input name="bgcolor" type="text" placeholder="#ffffff" value="<%= product.bgcolor || '#ffffff' %>"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block mb-2 font-medium text-gray-700">Panel Color</label>
-                            <input name="panelcolor" type="text" placeholder="#f3f4f6" value="<%= product.panelcolor || '#f3f4f6' %>"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block mb-2 font-medium text-gray-700">Text Color</label>
-                            <input name="textcolor" type="text" placeholder="#000000" value="<%= product.textcolor || '#000000' %>"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                        <div class="mb-4">
+                                            <label class="block mb-2 font-medium text-gray-700">Product
+                                                Description</label>
+                                            <textarea name="description" placeholder="Enter product description..."
+                                                rows="3"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"><%= product.description || '' %></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-50 p-6 rounded-lg">
+                                        <h3 class="text-lg font-semibold mb-4 text-gray-700">Color Customization</h3>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div>
+                                                <label class="block mb-2 font-medium text-gray-700">Background
+                                                    Color</label>
+                                                <input name="bgcolor" type="text" placeholder="#ffffff"
+                                                    value="<%= product.bgcolor || '#ffffff' %>"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label class="block mb-2 font-medium text-gray-700">Panel Color</label>
+                                                <input name="panelcolor" type="text" placeholder="#f3f4f6"
+                                                    value="<%= product.panelcolor || '#f3f4f6' %>"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            </div>
+                                            <div>
+                                                <label class="block mb-2 font-medium text-gray-700">Text Color</label>
+                                                <input name="textcolor" type="text" placeholder="#000000"
+                                                    value="<%= product.textcolor || '#000000' %>"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex gap-4">
+                                        <button type="submit"
+                                            class="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+                                            <i class="ri-save-line mr-2"></i>Update Product
+                                        </button>
+                                        <a href="/owners/admin"
+                                            class="px-6 py-3 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
+                                            Cancel
+                                        </a>
+                                    </div>
+                                </form>
+                            </main>
                         </div>
                     </div>
-                </div>
-                
-                <div class="flex gap-4">
-                    <button type="submit" class="px-6 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
-                        <i class="ri-save-line mr-2"></i>Update Product
-                    </button>
-                    <a href="/owners/admin" class="px-6 py-3 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
-                        Cancel
-                    </a>
-                </div>
-            </form>
-        </main>
-    </div>
-</div>
-<%- include('./partials/footer') %>
+                    <%- include('./partials/footer') %>

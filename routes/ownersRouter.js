@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const cloudinary = require("../config/cloudinary");
 const productModel = require("../models/product-model");
 const userModel = require("../models/user-model");
 const upload = require("../config/multer-config");
@@ -194,78 +195,91 @@ router.get("/edit-product/:id", isOwnerLoggedIn, async (req, res) => {
 	}
 });
 
-router.put("/update-product/:id", isOwnerLoggedIn, async (req, res) => {
-	try {
-		const productId = req.params.id;
-		const { name, description, price, discount, bgcolor, panelcolor, textcolor, category, stock } = req.body;
+router.put("/update-product/:id",
+  isOwnerLoggedIn,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const productId = req.params.id;
 
-		// Get the existing product to preserve image path
-		const existingProduct = await productModel.findById(productId);
-		if (!existingProduct) {
-			req.flash("error", "Product not found");
-			return res.redirect("/owners/admin");
-		}
+      const existingProduct = await productModel.findById(productId);
+      if (!existingProduct) {
+        req.flash("error", "Product not found");
+        return res.redirect("/owners/admin");
+      }
 
-		const updateData = {
-			name: name || existingProduct.name,
-			description: description || existingProduct.description,
-			price: price || existingProduct.price,
-			discount: discount !== undefined ? discount : existingProduct.discount,
-			image: existingProduct.image, // ✅ Changed from imagePath to image
-			bgcolor: bgcolor || existingProduct.bgcolor,
-			panelcolor: panelcolor || existingProduct.panelcolor,
-			textcolor: textcolor || existingProduct.textcolor,
-			category: category || existingProduct.category,
-			stock: stock !== undefined ? stock : existingProduct.stock
-		};
+      let updatedImage = existingProduct.image;
 
-		const updatedProduct = await productModel.findByIdAndUpdate(productId, updateData, { new: true });
+      // If new image uploaded
+      if (req.file) {
 
-		if (!updatedProduct) {
-			req.flash("error", "Product not found");
-			return res.redirect("/owners/admin");
-		}
+        // 🔥 Delete old image from Cloudinary
+        if (existingProduct.image) {
+          const publicId = existingProduct.image
+            .split("/upload/")[1]
+            .split(".")[0];
 
-		console.log("Product updated successfully:", updatedProduct._id);
-		req.flash("success", "Product updated successfully");
-		res.redirect("/owners/admin");
-	} catch (error) {
-		console.error("Error updating product:", error);
-		req.flash("error", "An error occurred while updating the product: " + error.message);
-		res.redirect("/owners/admin");
-	}
+          await cloudinary.uploader.destroy(publicId);
+        }
+
+        updatedImage = req.file.path; // new Cloudinary URL
+      }
+
+      await productModel.findByIdAndUpdate(productId, {
+        ...req.body,
+        image: updatedImage
+      });
+
+      req.flash("success", "Product updated successfully");
+      res.redirect("/owners/admin");
+
+    } catch (error) {
+      console.error("Error updating product:", error);
+      req.flash("error", "Update failed");
+      res.redirect("/owners/admin");
+    }
 });
 
 // Delete product
 router.delete("/delete-product/:id", isOwnerLoggedIn, async (req, res) => {
-	try {
-		const productId = req.params.id;
+  try {
+    const productId = req.params.id;
 
-		const deletedProduct = await productModel.findByIdAndDelete(productId);
+    const deletedProduct = await productModel.findByIdAndDelete(productId);
 
-		if (!deletedProduct) {
-			return res.json({
-				success: false,
-				message: "Product not found"
-			});
-		}
+    if (!deletedProduct) {
+      return res.json({
+        success: false,
+        message: "Product not found"
+      });
+    }
 
-		await userModel.updateMany(
-			{ cart: { $in: [productId] } },
-			{ $pull: { cart: productId } }
-		);
+    // 🔥 Delete image from Cloudinary
+    if (deletedProduct.image) {
+      const publicId = deletedProduct.image
+        .split("/upload/")[1]
+        .split(".")[0];
 
-		return res.json({
-			success: true,
-			message: "Product deleted successfully"
-		});
-	} catch (error) {
-		console.error("Error deleting product:", error);
-		return res.json({
-			success: false,
-			message: "An error occurred while deleting the product"
-		});
-	}
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    await userModel.updateMany(
+      { cart: { $in: [productId] } },
+      { $pull: { cart: productId } }
+    );
+
+    return res.json({
+      success: true,
+      message: "Product and image deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return res.json({
+      success: false,
+      message: "An error occurred while deleting the product"
+    });
+  }
 });
 
 router.get("/create-product", isOwnerLoggedIn, (req, res) => {

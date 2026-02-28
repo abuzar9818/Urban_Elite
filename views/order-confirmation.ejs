@@ -63,8 +63,9 @@
                                     <% if(item.image){ %>
                                         <div class="w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center"
                                             style="background-color:<%= item.bgcolor || '#f3f4f6' %>;">
-                                            <img src="<%= item.image %>" alt="<%= item.name %>"
-                                                class="h-12 w-auto object-contain">
+                                            <img src="<%= item.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                                                alt="<%= item.name %>" class="h-12 w-auto object-contain"
+                                                loading="lazy">
                                         </div>
                                         <% } else { %>
                                             <div
