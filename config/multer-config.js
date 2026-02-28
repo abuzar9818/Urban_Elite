@@ -1,33 +1,26 @@
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./public/images");
-  },
+const allowedTypes = ["image/png", "image/jpg", "image/jpeg", "image/webp"];
 
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() + "-" + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    if (!allowedTypes.includes(file.mimetype)) {
+      throw new Error("Only PNG, JPG, JPEG, WEBP files allowed");
+    }
 
-    cb(null, uniqueName);
+    return {
+      folder: "urban-elite",
+      public_id: Date.now() + "-" + Math.round(Math.random() * 1e9),
+    };
   },
 });
 
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/png", "image/jpg", "image/jpeg", "image/webp"];
-
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only PNG, JPG, JPEG, WEBP files are allowed!"), false);
-  }
-};
-
 const upload = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB Max
-  fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 },
 });
 
 module.exports = upload;

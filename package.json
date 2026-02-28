@@ -15,6 +15,7 @@
   "dependencies": {
     "20": "^3.1.9",
     "bcrypt": "^6.0.0",
+    "cloudinary": "^1.41.3",
     "config": "^4.2.0",
     "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.7",
@@ -30,6 +31,7 @@
     "mongoose": "^9.1.5",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.13",
     "nodemon": "^3.1.11",
     "razorpay": "^2.9.6",
