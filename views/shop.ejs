@@ -170,12 +170,11 @@
                                                                     <% } %>
 
                                                                         <% if(locals.loggedin) { %>
-                                                                            <button
-                                                                                class="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-red-500 hover:text-white transition-all duration-300 shadow-md transform hover:scale-110 wishlist-btn"
-                                                                                data-product-id="<%= product._id %>"
+                                                                            <a class="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-red-500 hover:text-white transition-all duration-300 shadow-md transform hover:scale-110 wishlist-btn"
+                                                                                href="/add-to-wishlist/<%= product._id %>"
                                                                                 onclick="event.stopPropagation()">
                                                                                 <i class="ri-heart-line text-lg"></i>
-                                                                            </button>
+                                                                            </a>
                                                                             <% } %>
                                                         </div>
                                                     </div>
@@ -227,57 +226,6 @@
                                 newUrl.search = newParams.toString();
                                 window.location.href = newUrl.toString();
                                 e.preventDefault();
-                            });
-                        });
-
-                        // Wishlist functionality
-                        const wishlistButtons = document.querySelectorAll('.wishlist-btn');
-
-                        wishlistButtons.forEach(button => {
-                            button.addEventListener('click', async function (e) {
-                                e.preventDefault();
-                                const productId = this.getAttribute('data-product-id');
-
-                                try {
-                                    const response = await fetch(`/add-to-wishlist/${productId}`, {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        }
-                                    });
-
-                                    const result = await response.json();
-
-                                    if (result.success) {
-                                        // Toggle heart icon
-                                        const icon = this.querySelector('i');
-                                        if (icon.classList.contains('ri-heart-line')) {
-                                            icon.classList.remove('ri-heart-line');
-                                            icon.classList.add('ri-heart-fill');
-                                            this.classList.add('bg-red-500', 'text-white');
-                                        } else {
-                                            icon.classList.remove('ri-heart-fill');
-                                            icon.classList.add('ri-heart-line');
-                                            this.classList.remove('bg-red-500', 'text-white');
-                                        }
-
-                                        // Show success message
-                                        const successDiv = document.createElement('div');
-                                        successDiv.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 p-4 rounded-lg bg-green-500 shadow-lg animate-fade-in';
-                                        successDiv.innerHTML = '<span class="inline-block text-white font-medium">' + result.message + '</span>';
-                                        document.body.appendChild(successDiv);
-
-                                        // Auto-remove message after 3 seconds
-                                        setTimeout(() => {
-                                            successDiv.remove();
-                                        }, 3000);
-                                    } else {
-                                        alert(result.message);
-                                    }
-                                } catch (error) {
-                                    console.error('Error adding to wishlist:', error);
-                                    alert('An error occurred while adding to wishlist');
-                                }
                             });
                         });
                     });

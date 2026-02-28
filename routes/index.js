@@ -474,15 +474,10 @@ router.get("/addtocart/:productid", isloggedin, async (req, res) => {
 
 			await user.save();
 			req.flash("success", "Added to cart");
-
-			// If coming from wishlist, redirect to cart page
-			if (fromWishlist) {
-				return res.redirect("/cart");
-			}
 		} else {
 			req.flash("success", "Product already in cart");
 		}
-		res.redirect("/shop");
+		res.redirect("/cart");
 	} catch (error) {
 		console.error(error);
 		res.status(500).send("Internal Server Error");
@@ -757,15 +752,8 @@ router.get("/add-to-wishlist/:productid", isloggedin, async (req, res) => {
 			req.flash("error", "Product already in wishlist");
 		}
 
-		// Check referer to determine where to redirect
-		const referer = req.get('Referer');
-		if (referer && referer.includes('/product/')) {
-			// If coming from product detail page, redirect back to product page
-			res.redirect(referer);
-		} else {
-			// Otherwise, redirect to wishlist page
-			res.redirect("/wishlist");
-		}
+		// Redirect directly to the wishlist page
+		res.redirect("/wishlist");
 	} catch (error) {
 		console.error(error);
 		req.flash("error", "Error adding to wishlist");
