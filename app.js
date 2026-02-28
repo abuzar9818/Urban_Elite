@@ -10,10 +10,10 @@ const productsRouter = require("./routes/productsRouter.js");
 const indexRouter = require("./routes/index.js");
 const setUser = require("./middleware/setUser");
 const morgan = require("morgan");
+const paymentRouter = require("./routes/paymentRouter");
 
 require("dotenv").config();
 require("./config/mongoose-connection.js");
-
 
 const ownerModel = require('./models/owner-model');
 const bcrypt = require('bcrypt');
@@ -25,7 +25,7 @@ async function createAdminIfNotExists() {
             // Create a default admin account
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', saltRounds);
-            
+
             await ownerModel.create({
                 fullname: 'Admin',
                 email: process.env.ADMIN_EMAIL || 'admin@example.com',
@@ -46,13 +46,13 @@ const couponModel = require('./models/coupon-model');
 async function createSampleCoupons() {
     try {
         const couponCodes = ['WELCOME10', 'SAVE200', 'FREESHIP']; // Add any new coupon codes here
-        
+
         for (const code of couponCodes) {
             const existingCoupon = await couponModel.findOne({ code: code });
             if (!existingCoupon) {
                 // Create the specific coupon if it doesn't exist
                 let newCoupon;
-                switch(code) {
+                switch (code) {
                     case 'WELCOME10':
                         newCoupon = {
                             code: 'WELCOME10',
@@ -77,7 +77,7 @@ async function createSampleCoupons() {
                         newCoupon = {
                             code: 'FREESHIP',
                             discountType: 'fixed',
-                            discountValue: 20, 
+                            discountValue: 20,
                             minOrderAmount: 500,
                             expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
                             isActive: true
@@ -86,7 +86,7 @@ async function createSampleCoupons() {
                     default:
                         continue; // Skip unknown coupon codes
                 }
-                
+
                 if (newCoupon) {
                     await couponModel.create(newCoupon);
                     console.log(`Coupon ${code} created successfully!`);
@@ -107,12 +107,12 @@ async function addNewEraCoupon() {
             const newCoupon = {
                 code: 'NEWERA',
                 discountType: 'fixed',
-                discountValue: 1000, 
+                discountValue: 1000,
                 minOrderAmount: 8000,
                 expiryDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
                 isActive: true
             };
-            
+
             await couponModel.create(newCoupon);
             console.log('NEWERA coupon created successfully!');
         }
@@ -126,20 +126,20 @@ setTimeout(addNewEraCoupon, 2500);
 const app = express();
 
 // Middleware
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-app.use(methodOverride('_method')); 
+app.use(methodOverride('_method'));
 app.use(cookieParser());
 app.use(
-	expressSession({
-		resave: false,
-		saveUninitialized: false,
-		secret: process.env.EXPRESS_SESSION_SECRET || "fallback-secret-key-change-in-production",
-	})
-); 
+    expressSession({
+        resave: false,
+        saveUninitialized: false,
+        secret: process.env.EXPRESS_SESSION_SECRET || "fallback-secret-key-change-in-production",
+    })
+);
 
-app.use(flash()); 
+app.use(flash());
 
 app.use(setUser);
 
@@ -152,19 +152,20 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, "public"))); 
+app.use(express.static(path.join(__dirname, "public")));
 
-app.set("views", path.join(__dirname, "views")); 
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
 // Routes
-app.use("/", indexRouter); 
+app.use("/", indexRouter);
 app.use("/owners", ownersRouter);
-app.use("/users", usersRouter); 
-app.use("/products", productsRouter); 
+app.use("/users", usersRouter);
+app.use("/products", productsRouter);
+app.use("/payment", paymentRouter);
 
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-	console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
