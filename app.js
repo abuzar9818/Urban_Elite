@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const path = require("path");
@@ -11,7 +12,6 @@ const indexRouter = require("./routes/index.js");
 const setUser = require("./middleware/setUser");
 const morgan = require("morgan");
 
-require("dotenv").config();
 const paymentRouter = require("./routes/paymentRouter");
 require("./config/mongoose-connection.js");
 

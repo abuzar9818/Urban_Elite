@@ -25,42 +25,42 @@ router.get("/admin", isOwnerLoggedIn, async (req, res) => {
 		const users = await userModel.find({}).populate('orders');
 		let success = req.flash("success");
 		let error = req.flash("error");
-		
+
 		let totalOrders = 0;
 		let todayOrders = 0;
 		let todaySales = 0;
 		let weekSales = 0;
-		let monthSales = 0;		
-		
+		let monthSales = 0;
+
 		users.forEach(user => {
-			if(user.orders && user.orders.length > 0) {
+			if (user.orders && user.orders.length > 0) {
 				totalOrders += user.orders.length;
-				
+
 				user.orders.forEach(order => {
 					const orderDate = new Date(order.date);
 					const today = new Date();
 					const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 					const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-					
+
 					// Today's orders and sales
-					if(orderDate.toDateString() === today.toDateString()) {
+					if (orderDate.toDateString() === today.toDateString()) {
 						todayOrders++;
 						todaySales += order.total || 0;
 					}
-					
+
 					// This week's sales
-					if(orderDate >= thisWeek) {
+					if (orderDate >= thisWeek) {
 						weekSales += order.total || 0;
 					}
-					
+
 					// This month's sales
-					if(orderDate >= thisMonth) {
+					if (orderDate >= thisMonth) {
 						monthSales += order.total || 0;
 					}
 				});
 			}
 		});
-		
+
 		const salesData = {
 			todaySales: todaySales,
 			weekSales: weekSales,
@@ -74,7 +74,7 @@ router.get("/admin", isOwnerLoggedIn, async (req, res) => {
 				revenue: (p.price * (Math.floor(Math.random() * 100) + 10))
 			}))
 		};
-		
+
 		res.render("admin", { products, users, success, error, salesData, loggedin: true });
 	} catch (error) {
 		console.error(error);
@@ -89,7 +89,7 @@ router.get("/reviews", isOwnerLoggedIn, async (req, res) => {
 			.populate('productId', 'name image')
 			.populate('userId', 'fullName email')
 			.sort({ date: -1 });
-		
+
 		// Group reviews by product
 		const reviewsByProduct = {};
 		reviews.forEach(review => {
@@ -102,7 +102,7 @@ router.get("/reviews", isOwnerLoggedIn, async (req, res) => {
 			}
 			reviewsByProduct[productId].reviews.push(review);
 		});
-		
+
 		const productsWithReviews = Object.values(reviewsByProduct).map(productData => {
 			const totalRating = productData.reviews.reduce((sum, review) => sum + review.rating, 0);
 			const averageRating = (totalRating / productData.reviews.length).toFixed(1);
@@ -112,7 +112,7 @@ router.get("/reviews", isOwnerLoggedIn, async (req, res) => {
 				totalReviews: productData.reviews.length
 			};
 		});
-		
+
 		res.render("admin-reviews", { productsWithReviews, loggedin: true });
 	} catch (error) {
 		console.error(error);
@@ -136,10 +136,10 @@ router.get("/orders", isOwnerLoggedIn, async (req, res) => {
 				});
 			}
 		});
-		
+
 
 		allOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-		
+
 		res.render("admin-orders", { orders: allOrders, loggedin: true });
 	} catch (error) {
 		console.error(error);
@@ -165,7 +165,7 @@ router.get("/sales", isOwnerLoggedIn, async (req, res) => {
 				status: ['Completed', 'Pending', 'Processing'][Math.floor(Math.random() * 3)]
 			}))
 		};
-		
+
 		res.render("sales", { salesData, loggedin: true });
 	} catch (error) {
 		console.error(error);
@@ -178,12 +178,12 @@ router.get("/edit-product/:id", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const productId = req.params.id;
 		const product = await productModel.findById(productId);
-		
+
 		if (!product) {
 			req.flash("error", "Product not found");
 			return res.redirect("/owners/admin");
 		}
-		
+
 		let success = req.flash("success");
 		let error = req.flash("error");
 		res.render("editProducts", { product, success, error, loggedin: true });
@@ -198,14 +198,14 @@ router.put("/update-product/:id", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const productId = req.params.id;
 		const { name, description, price, discount, bgcolor, panelcolor, textcolor, category, stock } = req.body;
-		
+
 		// Get the existing product to preserve image path
 		const existingProduct = await productModel.findById(productId);
 		if (!existingProduct) {
 			req.flash("error", "Product not found");
 			return res.redirect("/owners/admin");
 		}
-		
+
 		const updateData = {
 			name: name || existingProduct.name,
 			description: description || existingProduct.description,
@@ -218,14 +218,14 @@ router.put("/update-product/:id", isOwnerLoggedIn, async (req, res) => {
 			category: category || existingProduct.category,
 			stock: stock !== undefined ? stock : existingProduct.stock
 		};
-		
+
 		const updatedProduct = await productModel.findByIdAndUpdate(productId, updateData, { new: true });
-		
+
 		if (!updatedProduct) {
 			req.flash("error", "Product not found");
 			return res.redirect("/owners/admin");
 		}
-		
+
 		console.log("Product updated successfully:", updatedProduct._id);
 		req.flash("success", "Product updated successfully");
 		res.redirect("/owners/admin");
@@ -240,21 +240,21 @@ router.put("/update-product/:id", isOwnerLoggedIn, async (req, res) => {
 router.delete("/delete-product/:id", isOwnerLoggedIn, async (req, res) => {
 	try {
 		const productId = req.params.id;
-		
+
 		const deletedProduct = await productModel.findByIdAndDelete(productId);
-		
+
 		if (!deletedProduct) {
 			return res.json({
 				success: false,
 				message: "Product not found"
 			});
 		}
-		
+
 		await userModel.updateMany(
 			{ cart: { $in: [productId] } },
 			{ $pull: { cart: productId } }
 		);
-		
+
 		return res.json({
 			success: true,
 			message: "Product deleted successfully"
@@ -276,51 +276,50 @@ router.get("/create-product", isOwnerLoggedIn, (req, res) => {
 
 // Create product POST route
 router.post("/create-product", isOwnerLoggedIn, upload.single("image"), async (req, res) => {
-	try {
-		const {
-			name,
-			description,
-			price,
-			discount,
-			bgcolor,
-			panelcolor,
-			textcolor,
-			category,
-			stock
-		} = req.body;
-		
-		let imagePath = '';
-		
-		// Handle uploaded image or use default
-		if (req.file) {
-			// File is already saved by multer.diskStorage
-			imagePath = `/images/${req.file.filename}`;
-		} else {
-			// Use random image from public folder
-const imageFiles = ['1bag.png', '2bag.png', '3bag.png', '4bag.png', '5bag.png', '6bag.png', '7bag.png', '8bag.png','9bag.png','10bag.png','11bag.png','12bag.png'];			const randomImage = imageFiles[Math.floor(Math.random() * imageFiles.length)];
-			imagePath = `/images/${randomImage}`;
-		}
-		
-		await productModel.create({
-			name,
-			description: description || 'Premium quality product from URBAN ÉLITE collection.',
-			price,
-			discount: discount || 0,
-			image: imagePath,  // ✅ Changed from imagePath to image
-			bgcolor: bgcolor || '#ffffff',
-			panelcolor: panelcolor || '#f3f4f6',
-			textcolor: textcolor || '#000000',
-			category: category || 'bags',
-			stock: stock || 0
-		});
-		
-		req.flash("success", "✅ Product Created Successfully!");
-		res.redirect("/owners/admin");
-	} catch (err) {
-		console.error("Error creating product:", err);
-		req.flash("error", err.message);
-		res.redirect("/owners/create-product");
-	}
+  try {
+    const {
+      name,
+      description,
+      price,
+      discount,
+      bgcolor,
+      panelcolor,
+      textcolor,
+      category,
+      stock
+    } = req.body;
+
+    let imagePath = "";
+
+    // If image uploaded → Cloudinary gives full URL
+    if (req.file) {
+      imagePath = req.file.path;   // ✅ Cloudinary URL
+    } else {
+      // Optional: Use a default hosted image (upload one default image to Cloudinary and paste its URL here)
+      imagePath = "https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v123456/default.png";
+    }
+
+    await productModel.create({
+      name,
+      description: description || "Premium quality product from URBAN ÉLITE collection.",
+      price,
+      discount: discount || 0,
+      image: imagePath,   // ✅ now storing URL
+      bgcolor: bgcolor || "#ffffff",
+      panelcolor: panelcolor || "#f3f4f6",
+      textcolor: textcolor || "#000000",
+      category: category || "bags",
+      stock: stock || 0
+    });
+
+    req.flash("success", "✅ Product Created Successfully!");
+    res.redirect("/owners/admin");
+
+  } catch (err) {
+    console.error("Error creating product:", err);
+    req.flash("error", err.message);
+    res.redirect("/owners/create-product");
+  }
 });
 
 module.exports = router;

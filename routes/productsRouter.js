@@ -18,29 +18,22 @@ router.post("/create", upload.single("image"), async (req, res) => {
       stock,
     } = req.body;
 
-    let imagePath = '';
-    if (req.file) {
-        const fs = require('fs');
-        const path = require('path');
-        const imageName = `${Date.now()}-${req.file.originalname}`;
-        const uploadPath = path.join(__dirname, '../public/images', imageName);
+    let imagePath = "";
 
-        fs.writeFileSync(uploadPath, req.file.buffer);
-        imagePath = `/images/${imageName}`;
+    // If image uploaded → Cloudinary URL
+    if (req.file) {
+      imagePath = req.file.path;   // ✅ Cloudinary full URL
     } else {
-        const fs = require('fs');
-        const path = require('path');
-        const imageFiles = ['1bag.png', '2bag.png', '3bag.png', '4bag.png', '5bag.png', '6bag.png', '7bag.png', '8bag.png'];
-        const randomImage = imageFiles[Math.floor(Math.random() * imageFiles.length)];
-        imagePath = `/images/${randomImage}`;
+      // ✅ Use a default Cloudinary image URL
+      imagePath = "https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v123456/default-product.png";
     }
 
     await productModel.create({
       name,
-      description: description || 'Premium quality product from URBAN ÉLITE collection.',
+      description: description || "Premium quality product from URBAN ÉLITE collection.",
       price,
       discount,
-      imagePath: imagePath,
+      image: imagePath,   // 🔥 Make sure your schema uses 'image'
       bgcolor,
       panelcolor,
       textcolor,
@@ -50,6 +43,7 @@ router.post("/create", upload.single("image"), async (req, res) => {
 
     req.flash("success", "✅ Product Created Successfully!");
     res.redirect("/owners/admin");
+
   } catch (err) {
     console.log(err);
     req.flash("error", err.message);
