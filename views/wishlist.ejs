@@ -1,63 +1,112 @@
 <%- include('./partials/header') %>
 
-    <div class="container mx-auto px-4 md:px-8 py-8 md:py-12 flex-grow" style="background-color: #FAFAFA;">
-        <h1 class="text-3xl font-bold mb-8" style="color: #1E1E1E;">My Wishlist</h1>
+<div class="container mx-auto px-4 md:px-8 py-8 md:py-12 flex-grow bg-[#FAFAFA]">
+    <h1 class="text-3xl md:text-4xl font-bold mb-10 text-[#1E1E1E]">My Wishlist</h1>
 
-        <% if(!user.wishlist || user.wishlist.length===0) { %>
-            <div class="text-center py-12">
-                <i class="ri-heart-line text-6xl mb-4" style="color: #999;"></i>
-                <p class="text-xl mb-4" style="color: #666;">Your wishlist is empty</p>
-                <a href="/shop" class="inline-block px-6 py-3 rounded-lg text-white transition-colors"
-                    style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'"
-                    onmouseout="this.style.backgroundColor='#B76E79'">
-                    Browse Products
-                </a>
-            </div>
-            <% } else { %>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    <% user.wishlist.forEach(function(product){ %>
-                        <div class="rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
-                            style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
-                            <div class="w-full h-52 flex justify-center items-center"
-                                style="background-color: <%= product.bgcolor || '#FAFAFA' %>;">
-                                <% if (product.image) { %>
-                                    <img class="h-[12rem] w-auto object-contain"
-                                        src="<%= product.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
-                                        alt="<%= product.name %>" loading="lazy">
-                                    <% } else { %>
-                                        <div style="color: #999;">No Image</div>
-                                        <% } %>
-                            </div>
-                            <div class="p-4"
-                                style="background-color: <%= product.panelcolor || '#FAFAFA' %>; color: <%= product.textcolor || '#1E1E1E' %>;">
-                                <h3 class="font-semibold text-lg mb-1 truncate">
-                                    <%= product.name %>
-                                </h3>
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <span class="font-bold" style="color: #1E1E1E;">₹ <%= product.price %></span>
-                                        <% if(product.discount && product.discount> 0) { %>
-                                            <span class="text-sm block" style="color: #B76E79;">Save ₹<%=
-                                                    product.discount %></span>
-                                            <% } %>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <a href="/addtocart/<%= product._id %>" class="text-white p-2 rounded-full"
-                                            style="background-color: #B76E79;" title="Add to Cart">
-                                            <i class="ri-shopping-cart-line"></i>
-                                        </a>
-                                        <a href="/remove-from-wishlist/<%= product._id %>"
-                                            class="text-white p-2 rounded-full" style="background-color: #dc3545;"
-                                            title="Remove from Wishlist">
-                                            <i class="ri-heart-fill"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <% }) %>
-                </div>
+    <% if(!user.wishlist || user.wishlist.length === 0) { %>
+
+        <div class="text-center py-16">
+            <i class="ri-heart-line text-6xl mb-4 text-gray-400"></i>
+            <p class="text-xl mb-6 text-gray-600">Your wishlist is empty</p>
+            <a href="/shop"
+               class="inline-block px-8 py-3 rounded-lg text-white font-medium transition-all duration-300 hover:scale-105"
+               style="background-color: #B76E79;">
+                Browse Products
+            </a>
+        </div>
+
+    <% } else { %>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+        <% user.wishlist.forEach(function(product){ %>
+
+        <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-gray-200">
+
+            <!-- Product Image -->
+            <div class="w-full h-60 flex justify-center items-center"
+                 style="background-color: <%= product.bgcolor || '#FAFAFA' %>;">
+                
+                <% if (product.image) { %>
+                    <img 
+                        class="h-[14rem] w-auto object-contain transition-transform duration-300 hover:scale-105"
+                        src="<%= product.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                        alt="<%= product.name %>"
+                        loading="lazy">
+                <% } else { %>
+                    <div class="text-gray-400">No Image</div>
                 <% } %>
+
+            </div>
+
+            <!-- Product Details -->
+            <div class="p-5 flex flex-col justify-between h-[170px]"
+                 style="background-color: <%= product.panelcolor || '#FFFFFF' %>; 
+                        color: <%= product.textcolor || '#1E1E1E' %>;">
+
+                <!-- Product Name -->
+                <h3 class="font-semibold text-lg truncate mb-3">
+                    <%= product.name %>
+                </h3>
+
+                <% 
+                    let originalPrice = product.price + (product.discount || 0);
+                    let finalPrice = product.price;
+                %>
+
+                <!-- Bottom Section -->
+                <div class="flex items-center justify-between">
+
+                    <!-- Price Section -->
+                    <div>
+                        <h4 class="text-xl font-bold">
+                            ₹ <%= finalPrice %>
+                        </h4>
+
+                        <% if(product.discount && product.discount > 0){ %>
+                            <span class="text-sm text-gray-500 line-through block">
+                                ₹ <%= originalPrice %>
+                            </span>
+
+                            <span class="text-sm text-green-600 font-semibold block">
+                                Save ₹<%= product.discount %>
+                            </span>
+                        <% } %>
+                    </div>
+
+                    <!-- Action Buttons (Side by Side) -->
+                    <div class="flex gap-3 items-center">
+
+                        <!-- Add to Cart -->
+                        <a href="/addtocart/<%= product._id %>"
+                           class="w-10 h-10 flex items-center justify-center rounded-full text-white shadow-md hover:scale-110 transition-transform duration-300"
+                           style="background-color: #B76E79;"
+                           title="Add to Cart">
+                            <i class="ri-shopping-cart-line text-lg"></i>
+                        </a>
+
+                        <!-- Remove from Wishlist -->
+                        <a href="/remove-from-wishlist/<%= product._id %>"
+                           class="w-10 h-10 flex items-center justify-center rounded-full text-white shadow-md hover:scale-110 transition-transform duration-300"
+                           style="background-color: #dc3545;"
+                           title="Remove from Wishlist">
+                            <i class="ri-heart-fill text-lg"></i>
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <% }) %>
+
     </div>
 
-    <%- include('./partials/footer') %>
+    <% } %>
+
+</div>
+
+<%- include('./partials/footer') %>
