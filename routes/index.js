@@ -183,11 +183,29 @@ router.get("/order/:orderId", isloggedin, async (req, res) => {
 	try {
 		const user = await userModel.findOne({ email: req.user.email });
 
-		const order = user.orders.find(o => o.id === req.params.orderId);
+		let order = user.orders.find(o => o.id === req.params.orderId);
 
 		if (!order) {
 			req.flash("error", "Order not found");
 			return res.redirect("/orders");
+		}
+
+		// Dynamically fetch latest product images
+		if (order.items && order.items.length > 0) {
+			const productIds = order.items.map(i => i.productId).filter(id => id);
+			if (productIds.length > 0) {
+				const products = await productModel.find({ _id: { $in: productIds } }, 'image');
+				const productMap = {};
+				products.forEach(p => { productMap[p._id.toString()] = p; });
+
+				order.items = order.items.map(item => {
+					const currentProduct = productMap[item.productId?.toString()];
+					if (currentProduct && currentProduct.image) {
+						item.image = currentProduct.image;
+					}
+					return item;
+				});
+			}
 		}
 
 		res.render("order-confirmation", {
@@ -794,7 +812,41 @@ router.get("/my-account", isloggedin, async (req, res) => {
 // My Orders page
 router.get("/orders", isloggedin, async (req, res) => {
 	try {
-		const user = await userModel.findOne({ email: req.user.email }).populate('orders');
+		const user = await userModel.findOne({ email: req.user.email });
+
+		if (user && user.orders && user.orders.length > 0) {
+			const allProductIds = [];
+			user.orders.forEach(order => {
+				if (order.items) {
+					order.items.forEach(item => {
+						if (item.productId) allProductIds.push(item.productId);
+					});
+				}
+			});
+
+			if (allProductIds.length > 0) {
+				const products = await productModel.find({ _id: { $in: allProductIds } }, 'image');
+				const productMap = {};
+				products.forEach(p => {
+					productMap[p._id.toString()] = p;
+				});
+
+				// Update order items with latest Image from Cloudinary
+				user.orders = user.orders.map(order => {
+					if (order.items) {
+						order.items = order.items.map(item => {
+							const currentProduct = productMap[item.productId?.toString()];
+							if (currentProduct && currentProduct.image) {
+								item.image = currentProduct.image;
+							}
+							return item;
+						});
+					}
+					return order;
+				});
+			}
+		}
+
 		res.render("myOrders", { user, loggedin: true });
 	} catch (error) {
 		console.error(error);

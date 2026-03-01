@@ -1,109 +1,141 @@
 <%- include('./partials/header') %>
 
     <div class="container mx-auto px-4 md:px-8 py-8 md:py-12 flex-grow" style="background-color: #FAFAFA;">
-        <h1 class="text-3xl font-bold mb-8" style="color: #1E1E1E;">My Orders</h1>
+        <div class="mb-10 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">My Orders</h1>
+            <p class="text-gray-500 mt-2">View and track your previous purchases</p>
+        </div>
 
         <% if(!user.orders || user.orders.length===0) { %>
-            <div class="text-center py-12">
-                <i class="ri-package-line text-6xl mb-4" style="color: #999;"></i>
-                <p class="text-xl mb-4" style="color: #666;">You haven't placed any orders yet</p>
-                <a href="/shop" class="inline-block px-6 py-3 rounded-lg text-white transition-colors"
+            <div class="text-center py-16 bg-white rounded-3xl shadow-sm border border-gray-100">
+                <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="ri-shopping-bag-line text-4xl text-gray-400"></i>
+                </div>
+                <h2 class="text-2xl font-semibold mb-2 text-gray-800">No orders yet</h2>
+                <p class="text-gray-500 mb-8 max-w-md mx-auto">Looks like you haven't made your choice yet. Explore our
+                    latest collection and find something you love.</p>
+                <a href="/shop"
+                    class="inline-block px-8 py-3.5 rounded-full text-white font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'"
                     onmouseout="this.style.backgroundColor='#B76E79'">
                     Start Shopping
                 </a>
             </div>
             <% } else { %>
-                <div class="space-y-6">
+                <div class="space-y-8">
                     <% const sortedOrders=[...user.orders].sort((a, b)=> {
                         return new Date(b.date) - new Date(a.date); // newest first
-                        });
-                        %>
+                        }); %>
 
                         <% sortedOrders.forEach(function(order, index){ %>
-
-                            <div class="bg-white rounded-lg shadow-md p-6">
-                                <div class="flex justify-between items-start mb-4">
+                            <div
+                                class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 hover:shadow-md transition-all duration-300">
+                                <div
+                                    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-6 border-b border-gray-100 gap-4 md:gap-0">
                                     <div>
-                                        <h3 class="text-lg font-bold" style="color: #1E1E1E;">Order #<%= order.id ||
-                                                (index + 1) %>
+                                        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                            <span class="text-gray-400 font-medium">#</span>
+                                            <%= order.id || (index + 1) %>
                                         </h3>
-                                        <p class="text-sm" style="color: #666;">
+                                        <p class="text-sm text-gray-500 mt-1 flex items-center gap-1.5 font-medium">
+                                            <i class="ri-calendar-line text-gray-400"></i>
                                             <%= order.date || new Date().toLocaleDateString() %>
                                         </p>
                                     </div>
-                                    <span class="px-3 py-1 rounded-full text-sm font-semibold"
-                                        style="background-color: #d4edda; color: #155724;">
-                                        <% if(order.status) { %>
-                                            <%= order.status %>
+                                    <div class="flex items-center">
+                                        <% if(order.status && order.status.toLowerCase()==='cancelled' ) { %>
+                                            <span
+                                                class="px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase bg-red-50 text-red-600 border border-red-100">
+                                                <%= order.status %>
+                                            </span>
+                                            <% } else if(order.status && order.status.toLowerCase()==='processing' ) {
+                                                %>
+                                                <span
+                                                    class="px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase bg-blue-50 text-blue-600 border border-blue-100">
+                                                    <%= order.status %>
+                                                </span>
                                                 <% } else { %>
-                                                    Completed
+                                                    <span
+                                                        class="px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase bg-green-50 text-green-600 border border-green-100">
+                                                        <%= order.status || 'Completed' %>
+                                                    </span>
                                                     <% } %>
-                                    </span>
+                                    </div>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
                                     <% if(order.items && order.items.length> 0) { %>
                                         <% order.items.forEach(function(item){ %>
-                                            <div class="flex items-center gap-4">
-                                                <% if(item.image) { %>
-                                                    <img src="<%= item.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
-                                                        alt="<%= item.name %>" class="w-16 h-16 object-contain"
-                                                        loading="lazy" <% } else { %>
-                                                    <div class="w-16 h-16 flex items-center justify-center"
-                                                        style="background-color: #FAFAFA;">
-                                                        <i class="ri-image-line text-gray-400"></i>
-                                                    </div>
-                                                    <% } %>
-                                                        <div>
-                                                            <h4 class="font-medium" style="color: #1E1E1E;">
-                                                                <%= item.name %>
-                                                            </h4>
-                                                            <% let qty=item.quantity || 1; let finalPrice=item.price; // already discounted final price
-                                                               let lineTotal=qty * finalPrice; %>
-
-                                                                <p style="color:#666;">
-                                                                    Qty: <%= qty %> × ₹<%= finalPrice %>
-                                                                </p>
-
+                                            <div
+                                                class="flex items-center gap-5 p-4 rounded-xl bg-gray-50/80 hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all group">
+                                                <div
+                                                    class="w-20 h-20 bg-white rounded-lg shadow-sm border border-gray-100 flex-shrink-0 flex items-center justify-center p-2 overflow-hidden">
+                                                    <% if(item.image) { %>
+                                                        <img src="<%= item.image.replace('/upload/', '/upload/f_auto,q_auto,w_600/') %>"
+                                                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                                                            alt="<%= item.name %>"
+                                                            class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                                            loading="lazy">
+                                                        <i class="ri-image-line text-2xl text-gray-300 hidden"></i>
+                                                        <% } else { %>
+                                                            <i class="ri-image-line text-2xl text-gray-300"></i>
+                                                            <% } %>
+                                                </div>
+                                                <div class="flex-grow">
+                                                    <h4 class="font-semibold text-gray-800 line-clamp-1"
+                                                        title="<%= item.name %>">
+                                                        <%= item.name %>
+                                                    </h4>
+                                                    <% let qty=item.quantity || 1; let finalPrice=item.price; let
+                                                        lineTotal=qty * finalPrice; %>
+                                                        <div class="flex items-center justify-between mt-2">
+                                                            <p
+                                                                class="text-sm text-gray-500 font-medium bg-white px-2 py-0.5 rounded-md border border-gray-100 shadow-sm">
+                                                                Qty: <%= qty %>
+                                                            </p>
+                                                            <p class="text-base font-bold text-gray-900">₹<%= finalPrice
+                                                                    %>
+                                                            </p>
                                                         </div>
+                                                </div>
                                             </div>
                                             <% }) %>
                                                 <% } else { %>
-                                                    <p>No items in this order</p>
+                                                    <div
+                                                        class="col-span-full py-6 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                                        No items in this order
+                                                    </div>
                                                     <% } %>
                                 </div>
 
-                                <div class="flex justify-between items-center pt-4 border-t"
-                                    style="border-color: #E5E5E5;">
-                                    <p class="font-semibold" style="color: #1E1E1E;">Total: ₹<%= order.total || 0 %>
-                                    </p>
-                                    <div class="flex gap-2">
+                                <div
+                                    class="flex flex-col md:flex-row justify-between items-center pt-6 border-t border-gray-100 gap-6 md:gap-0">
+                                    <div class="flex flex-col md:flex-row items-center gap-2 md:gap-3 w-full md:w-auto">
+                                        <span class="text-gray-500 font-medium">Total Amount:</span>
+                                        <span class="text-2xl font-extrabold text-gray-900">₹<%= order.total || 0 %>
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-wrap justify-center md:justify-end gap-3 w-full md:w-auto">
                                         <a href="/order/<%= order.id %>"
-                                            class="px-4 py-2 rounded-lg text-white text-sm transition-colors"
+                                            class="flex-1 md:flex-none text-center px-6 py-2.5 rounded-lg text-white font-medium transition-all shadow-sm hover:shadow transform hover:-translate-y-0.5"
                                             style="background-color:#B76E79;"
                                             onmouseover="this.style.backgroundColor='#A05A66'"
                                             onmouseout="this.style.backgroundColor='#B76E79'">
-                                            View Order Details
+                                            View Details
                                         </a>
-
-
                                         <button onclick="openReviewSelector('<%= order.id %>')"
-                                            class="px-4 py-2 rounded text-white text-sm" style="background:#2563EB;">
-                                            Review
-                                        </button>
-
-                                        <button class="px-4 py-2 rounded-lg text-white text-sm transition-colors"
-                                            style="background-color: #B76E79;"
-                                            onmouseover="this.style.backgroundColor='#A05A66'"
-                                            onmouseout="this.style.backgroundColor='#B76E79'">
-                                            Track Order
+                                            class="flex-1 md:flex-none px-6 py-2.5 rounded-lg text-gray-700 bg-white border border-gray-200 font-medium transition-all hover:bg-gray-50 hover:border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-100">
+                                            <i class="ri-star-line mr-1 text-yellow-500"></i> Review
                                         </button>
                                         <button
-                                            class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm transition-colors"
+                                            class="flex-1 md:flex-none px-6 py-2.5 rounded-lg text-gray-700 bg-white border border-gray-200 font-medium transition-all hover:bg-gray-50 hover:border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-100">
+                                            Track
+                                        </button>
+                                        <button
+                                            class="flex-1 md:flex-none px-6 py-2.5 rounded-lg text-gray-700 bg-white border border-gray-200 font-medium transition-all hover:border-[#B76E79] hover:text-[#B76E79] shadow-sm transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-100"
                                             onmouseover="this.style.borderColor='#B76E79'; this.style.color='#B76E79';"
-                                            onmouseout="this.style.borderColor='#d1d5db'; this.style.color='#374151';">
-                                            Reorder
+                                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.color='#374151';">
+                                            <i class="ri-restart-line mr-1"></i> Reorder
                                         </button>
                                     </div>
                                 </div>
@@ -114,58 +146,115 @@
     </div>
 
     <!-- Review Selector Modal -->
-    <div id="reviewModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 w-80 shadow-xl">
+    <div id="reviewModal"
+        class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm hidden items-center justify-center z-50 transition-opacity">
+        <div class="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl mx-4 transform transition-all scale-95 opacity-0"
+            id="reviewModalContent">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Write a Review</h3>
+                    <p class="text-sm text-gray-500 mt-1">Select the item you want to review</p>
+                </div>
+                <button onclick="closeReviewModal()"
+                    class="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
 
-            <h3 class="text-lg font-semibold mb-4">Select product to review</h3>
+            <div id="reviewList" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar"></div>
 
-            <div id="reviewList" class="space-y-2"></div>
-
-
-            <button onclick="closeReviewModal()" class="mt-4 w-full py-2 rounded bg-gray-200 hover:bg-gray-300">
+            <button onclick="closeReviewModal()"
+                class="mt-8 w-full py-3 rounded-xl font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors">
                 Cancel
             </button>
         </div>
     </div>
 
     <script>
-        const ordersData = <%- JSON.stringify(user.orders || []) %>;
+        const ordersData = <% - JSON.stringify(user.orders || []) %>;
 
         function openReviewSelector(orderId) {
             const order = ordersData.find(o => o.id === orderId);
             if (!order) return;
 
-            // If only 1 product → open directly
             if (order.items.length === 1) {
                 window.location.href = "/product/" + order.items[0].productId;
                 return;
             }
 
-            // Multiple products → show modal
             const list = document.getElementById("reviewList");
             list.innerHTML = "";
 
             order.items.forEach(item => {
                 const btn = document.createElement("button");
-                btn.className = "w-full text-left px-3 py-2 rounded hover:bg-gray-100 border";
-                btn.innerText = item.name;
+                btn.className = "w-full flex items-center gap-4 text-left p-3 rounded-xl hover:bg-gray-50 border border-gray-100 transition-colors group";
+
+                const imgSrc = item.image ? item.image.replace('/upload/', '/upload/f_auto,q_auto,w_100/') : '';
+                const imgHtml = imgSrc
+                    ? `<img src="${imgSrc}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" class="w-12 h-12 object-contain bg-white rounded-md border border-gray-50" /><div class="w-12 h-12 hidden items-center justify-center bg-gray-50 rounded-md border border-gray-100"><i class="ri-image-line text-gray-300"></i></div>`
+                    : `<div class="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-md border border-gray-100"><i class="ri-image-line text-gray-300"></i></div>`;
+
+                btn.innerHTML = `
+                    ${imgHtml}
+                    <div class="flex-grow">
+                        <p class="font-medium text-gray-800 line-clamp-1 group-hover:text-[#B76E79] transition-colors">${item.name}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Click to review</p>
+                    </div>
+                    <i class="ri-arrow-right-s-line text-gray-300 group-hover:text-[#B76E79] transition-colors"></i>
+                `;
+
                 btn.onclick = () => {
                     window.location.href = "/product/" + item.productId;
                 };
                 list.appendChild(btn);
             });
 
-            document.getElementById("reviewModal").classList.remove("hidden");
-            document.getElementById("reviewModal").classList.add("flex");
+            const modal = document.getElementById("reviewModal");
+            const modalContent = document.getElementById("reviewModalContent");
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+
+            // Animation
+            setTimeout(() => {
+                modalContent.classList.remove("scale-95", "opacity-0");
+                modalContent.classList.add("scale-100", "opacity-100");
+            }, 10);
         }
 
         function closeReviewModal() {
             const modal = document.getElementById("reviewModal");
-            modal.classList.add("hidden");
-            modal.classList.remove("flex");
+            const modalContent = document.getElementById("reviewModalContent");
+
+            // Animation out
+            modalContent.classList.remove("scale-100", "opacity-100");
+            modalContent.classList.add("scale-95", "opacity-0");
+
+            setTimeout(() => {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }, 200);
         }
     </script>
 
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
 
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+    </style>
 
     <%- include('./partials/footer') %>
