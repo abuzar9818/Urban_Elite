@@ -171,7 +171,7 @@
     </div>
 
     <script>
-        const ordersData = <% - JSON.stringify(user.orders || []) %>;
+        const ordersData = <%- JSON.stringify(user.orders || []) %>;
 
         function openReviewSelector(orderId) {
             const order = ordersData.find(o => o.id === orderId);
