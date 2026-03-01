@@ -59,9 +59,8 @@
                                                             <h4 class="font-medium" style="color: #1E1E1E;">
                                                                 <%= item.name %>
                                                             </h4>
-                                                            <% let qty=item.quantity || 1; let finalPrice=item.price; //
-                                                                already discounted final price let lineTotal=qty *
-                                                                finalPrice; %>
+                                                            <% let qty=item.quantity || 1; let finalPrice=item.price; // already discounted final price
+                                                               let lineTotal=qty * finalPrice; %>
 
                                                                 <p style="color:#666;">
                                                                     Qty: <%= qty %> × ₹<%= finalPrice %>
@@ -130,7 +129,7 @@
     </div>
 
     <script>
-        const ordersData = <% - JSON.stringify(user.orders || []) %>;
+        const ordersData = <%- JSON.stringify(user.orders || []) %>;
 
         function openReviewSelector(orderId) {
             const order = ordersData.find(o => o.id === orderId);
