@@ -22,9 +22,9 @@ router.post("/create", upload.single("image"), async (req, res) => {
 
     // If image uploaded → Cloudinary URL
     if (req.file) {
-      imagePath = req.file.path;   // ✅ Cloudinary full URL
+      imagePath = req.file.path;   // Cloudinary full URL
     } else {
-      // ✅ Use a default Cloudinary image URL
+      // Use a default Cloudinary image URL
       imagePath = "https://res.cloudinary.com/YOUR_CLOUD_NAME/image/upload/v123456/default-product.png";
     }
 
