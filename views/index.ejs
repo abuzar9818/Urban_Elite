@@ -231,72 +231,90 @@
 
     <!-- FAQ Section -->
     <section id="faq" class="py-24 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-4xl font-bold mb-6 brand-font" style="color: #1E1E1E;">Common Inquiries</h2>
-                <p class="text-gray-600 text-lg">Everything you need to know about the Urban Elite experience.</p>
-            </div>
-            
-            <div class="max-w-3xl mx-auto space-y-4">
-                <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
-                    <summary class="flex cursor-pointer items-center justify-between p-6">
-                        <h3 class="text-lg font-bold text-gray-900">How do I join the Elite membership?</h3>
-                        <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
-                            <i class="ri-arrow-down-s-line"></i>
-                        </span>
-                    </summary>
-                    <div class="px-6 pb-6 text-gray-600 leading-relaxed">
-                        Joining is simple. Create an account, set your style preferences, and you'll automatically be enrolled in our base membership. Elite tiers are unlocked through engagement and exclusive invitations.
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex flex-col lg:flex-row gap-16 items-center">
+                <!-- Left: FAQ Image -->
+                <div class="lg:w-5/12">
+                    <div class="relative">
+                        <div class="rounded-3xl overflow-hidden shadow-2xl">
+                            <img src="/images/faq-support.png" alt="Urban Elite Support" class="w-full h-auto object-cover">
+                        </div>
+                        <div class="absolute -bottom-8 -right-8 p-8 rounded-2xl shadow-xl hidden md:block" style="background-color: #B76E79; color: white;">
+                            <p class="text-sm font-bold uppercase tracking-widest mb-1">Our Promise</p>
+                            <p class="text-2xl font-bold">24/7 Dedicated Concierge</p>
+                        </div>
                     </div>
-                </details>
+                </div>
 
-                <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
-                    <summary class="flex cursor-pointer items-center justify-between p-6">
-                        <h3 class="text-lg font-bold text-gray-900">How is product authenticity guaranteed?</h3>
-                        <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
-                            <i class="ri-arrow-down-s-line"></i>
-                        </span>
-                    </summary>
-                    <div class="px-6 pb-6 text-gray-600 leading-relaxed">
-                        Every item undergoes a multi-stage physical inspection by our master curators. We source directly from authorized dealers and provide a digital certificate of authenticity with every purchase.
+                <!-- Right: FAQ Accordion -->
+                <div class="lg:w-7/12">
+                    <div class="mb-12">
+                        <h2 class="text-4xl font-bold mb-6 brand-font" style="color: #1E1E1E;">Common Inquiries</h2>
+                        <p class="text-gray-600 text-lg">Everything you need to know about navigating the Urban Elite experience.</p>
                     </div>
-                </details>
+                    
+                    <div class="space-y-4">
+                        <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
+                            <summary class="flex cursor-pointer items-center justify-between p-6">
+                                <h3 class="text-lg font-bold text-gray-900">How do I join the Elite membership?</h3>
+                                <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </span>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-600 leading-relaxed">
+                                Joining is simple. Create an account, set your style preferences, and you'll automatically be enrolled in our base membership. Elite tiers are unlocked through engagement and exclusive invitations.
+                            </div>
+                        </details>
 
-                <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
-                    <summary class="flex cursor-pointer items-center justify-between p-6">
-                        <h3 class="text-lg font-bold text-gray-900">What are the shipping costs for members?</h3>
-                        <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
-                            <i class="ri-arrow-down-s-line"></i>
-                        </span>
-                    </summary>
-                    <div class="px-6 pb-6 text-gray-600 leading-relaxed">
-                        Base members enjoy competitive flat rates. Premium tiers often qualify for complimentary priority shipping. You can view real-time estimates at checkout.
-                    </div>
-                </details>
+                        <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
+                            <summary class="flex cursor-pointer items-center justify-between p-6">
+                                <h3 class="text-lg font-bold text-gray-900">How is product authenticity guaranteed?</h3>
+                                <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </span>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-600 leading-relaxed">
+                                Every item undergoes a multi-stage physical inspection by our master curators. We source directly from authorized dealers and provide a digital certificate of authenticity with every purchase.
+                            </div>
+                        </details>
 
-                <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
-                    <summary class="flex cursor-pointer items-center justify-between p-6">
-                        <h3 class="text-lg font-bold text-gray-900">What is your return policy?</h3>
-                        <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
-                            <i class="ri-arrow-down-s-line"></i>
-                        </span>
-                    </summary>
-                    <div class="px-6 pb-6 text-gray-600 leading-relaxed">
-                        We offer a 14-day "No Questions Asked" inspection period. If the item doesn't meet your expectations, we'll arrange a priority pickup at your convenience.
-                    </div>
-                </details>
+                        <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
+                            <summary class="flex cursor-pointer items-center justify-between p-6">
+                                <h3 class="text-lg font-bold text-gray-900">What are the shipping costs for members?</h3>
+                                <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </span>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-600 leading-relaxed">
+                                Base members enjoy competitive flat rates. Premium tiers often qualify for complimentary priority shipping. You can view real-time estimates at checkout.
+                            </div>
+                        </details>
 
-                <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
-                    <summary class="flex cursor-pointer items-center justify-between p-6">
-                        <h3 class="text-lg font-bold text-gray-900">Is my payment information secure?</h3>
-                        <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
-                            <i class="ri-arrow-down-s-line"></i>
-                        </span>
-                    </summary>
-                    <div class="px-6 pb-6 text-gray-600 leading-relaxed">
-                        Absolutely. We use bank-grade 256-bit encryption for all transactions. Your sensitive data is handled via the "Secure Vault" protocol and is never stored on our primary servers.
+                        <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
+                            <summary class="flex cursor-pointer items-center justify-between p-6">
+                                <h3 class="text-lg font-bold text-gray-900">What is your return policy?</h3>
+                                <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </span>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-600 leading-relaxed">
+                                We offer a 14-day "No Questions Asked" inspection period. If the item doesn't meet your expectations, we'll arrange a priority pickup at your convenience.
+                            </div>
+                        </details>
+
+                        <details class="group rounded-2xl border border-gray-100 bg-[#FAFAFA] [&_summary::-webkit-details-marker]:hidden">
+                            <summary class="flex cursor-pointer items-center justify-between p-6">
+                                <h3 class="text-lg font-bold text-gray-900">Is my payment information secure?</h3>
+                                <span class="ml-1.5 flex-shrink-0 rounded-full bg-white p-1.5 text-gray-900 group-open:rotate-180 transition-transform duration-300 shadow-sm border">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </span>
+                            </summary>
+                            <div class="px-6 pb-6 text-gray-600 leading-relaxed">
+                                Absolutely. We use bank-grade 256-bit encryption for all transactions. Your sensitive data is handled via the "Secure Vault" protocol and is never stored on our primary servers.
+                            </div>
+                        </details>
                     </div>
-                </details>
+                </div>
             </div>
         </div>
     </section>
@@ -416,24 +434,85 @@
 </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-20" style="background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);">
-        <div class="container mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-12 brand-font" style="color: #1E1E1E;">Get In Touch</h2>
-            <div class="max-w-md mx-auto rounded-lg shadow-lg p-8" style="background-color: #FAFAFA;">
-                <form class="space-y-4">
-                    <div>
-                        <input type="text" placeholder="Your Name" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+    <section id="contact" class="py-24" style="background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex flex-col lg:flex-row gap-16">
+                <!-- Left: Contact Info -->
+                <div class="lg:w-1/2">
+                    <h2 class="text-4xl font-bold mb-8 brand-font" style="color: #1E1E1E;">Get In Touch</h2>
+                    <p class="text-gray-600 text-lg mb-12">Whether you have a question about our collections or need assistance with an order, our dedicated concierge team is here to help.</p>
+                    
+                    <div class="space-y-8">
+                        <div class="flex items-start gap-6">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: rgba(183, 110, 121, 0.1);">
+                                <i class="ri-map-pin-line text-xl" style="color: #B76E79;"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-1">Our Atelier</h4>
+                                <p class="text-gray-600">123 MG Road<br>Bangalore,Karnataka - 560078</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-6">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: rgba(183, 110, 121, 0.1);">
+                                <i class="ri-phone-line text-xl" style="color: #B76E79;"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-1">Luxury Hotline</h4>
+                                <p class="text-gray-600">+0522-245 289 <br>Available 24/7 for Elite Members</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-6">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: rgba(183, 110, 121, 0.1);">
+                                <i class="ri-mail-line text-xl" style="color: #B76E79;"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-1">Inquiries</h4>
+                                <p class="text-gray-600">support@urbanelite.com</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-6">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: rgba(183, 110, 121, 0.1);">
+                                <i class="ri-time-line text-xl" style="color: #B76E79;"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-1">Visiting Hours</h4>
+                                <p class="text-gray-600">Mon - Sat: 9:00 AM - 8:00 PM<br>Sunday: 10:00 AM - 6:00 PM</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <input type="email" placeholder="Your Email" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                </div>
+
+                <!-- Right: Contact Form -->
+                <div class="lg:w-1/2">
+                    <div class="rounded-3xl shadow-2xl p-10" style="background-color: #FAFAFA; border: 1px solid #E5E5E5;">
+                        <form class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold uppercase tracking-widest text-gray-500">First Name</label>
+                                    <input type="text" placeholder="John" class="w-full px-5 py-4 rounded-xl transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FFF;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold uppercase tracking-widest text-gray-500">Last Name</label>
+                                    <input type="text" placeholder="Doe" class="w-full px-5 py-4 rounded-xl transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FFF;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-widest text-gray-500">Email Address</label>
+                                <input type="email" placeholder="john@example.com" class="w-full px-5 py-4 rounded-xl transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FFF;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold uppercase tracking-widest text-gray-500">Your Message</label>
+                                <textarea placeholder="How can we assist you today?" rows="5" class="w-full px-5 py-4 rounded-xl transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FFF;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'"></textarea>
+                            </div>
+                            <button type="submit" class="w-full px-8 py-5 rounded-xl text-white font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-1" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
+                                Send Message
+                            </button>
+                        </form>
                     </div>
-                    <div>
-                        <textarea placeholder="Your Message" rows="4" class="w-full px-4 py-3 rounded-lg transition-all focus:outline-none" style="border: 1px solid #E5E5E5; color: #1E1E1E; background-color: #FAFAFA;" onfocus="this.style.borderColor='#B76E79'; this.style.boxShadow='0 0 0 2px rgba(183, 110, 121, 0.2)'" onblur="this.style.borderColor='#E5E5E5'; this.style.boxShadow='none'"></textarea>
-                    </div>
-                    <button type="submit" class="w-full px-6 py-3 rounded-lg text-white font-semibold transition-all" style="background-color: #B76E79;" onmouseover="this.style.backgroundColor='#A05A66'" onmouseout="this.style.backgroundColor='#B76E79'">
-                        Send Message
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     </section>
