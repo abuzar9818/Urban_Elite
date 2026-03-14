@@ -115,20 +115,13 @@
             const ctx = document.getElementById('salesChart').getContext('2d');
             
             // Prepare sales data
-            const dailySalesData = [
-                <%= Math.floor(salesData.weekSales/7) %>, 
-                <%= Math.floor(salesData.weekSales/7 + 5000) %>, 
-                <%= Math.floor(salesData.weekSales/7 - 2000) %>, 
-                <%= Math.floor(salesData.weekSales/7 + 3000) %>, 
-                <%= Math.floor(salesData.weekSales/7 - 1000) %>, 
-                <%= Math.floor(salesData.weekSales/7 + 8000) %>, 
-                <%= Math.floor(salesData.weekSales/7 + 2000) %>
-            ];
+            const dailySalesData = <%- JSON.stringify(salesData.weeklyTrend.data) %>;
+            const labels = <%- JSON.stringify(salesData.weeklyTrend.labels) %>;
             
             const config = {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: labels,
                     datasets: [{
                         label: 'Sales (₹)',
                         data: dailySalesData,

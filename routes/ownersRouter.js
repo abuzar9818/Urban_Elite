@@ -6,6 +6,7 @@ const userModel = require("../models/user-model");
 const upload = require("../config/multer-config");
 const isOwnerLoggedIn = require("../middleware/isOwnerLoggedIn");
 const { loginOwner, logoutOwner, registerOwner } = require("../controllers/ownerController");
+const { calculateSalesData } = require("../utils/salesStats");
 
 
 // Owner login page
@@ -27,54 +28,7 @@ router.get("/admin", isOwnerLoggedIn, async (req, res) => {
 		let success = req.flash("success");
 		let error = req.flash("error");
 
-		let totalOrders = 0;
-		let todayOrders = 0;
-		let todaySales = 0;
-		let weekSales = 0;
-		let monthSales = 0;
-
-		users.forEach(user => {
-			if (user.orders && user.orders.length > 0) {
-				totalOrders += user.orders.length;
-
-				user.orders.forEach(order => {
-					const orderDate = new Date(order.date);
-					const today = new Date();
-					const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-					const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-					// Today's orders and sales
-					if (orderDate.toDateString() === today.toDateString()) {
-						todayOrders++;
-						todaySales += order.total || 0;
-					}
-
-					// This week's sales
-					if (orderDate >= thisWeek) {
-						weekSales += order.total || 0;
-					}
-
-					// This month's sales
-					if (orderDate >= thisMonth) {
-						monthSales += order.total || 0;
-					}
-				});
-			}
-		});
-
-		const salesData = {
-			todaySales: todaySales,
-			weekSales: weekSales,
-			monthSales: monthSales,
-			totalOrders: totalOrders,
-			todayOrders: todayOrders,
-			avgOrderValue: totalOrders > 0 ? Math.floor(todaySales / todayOrders) : 0,
-			topProducts: products.slice(0, 5).map(p => ({
-				name: p.name,
-				sales: Math.floor(Math.random() * 100) + 10,
-				revenue: (p.price * (Math.floor(Math.random() * 100) + 10))
-			}))
-		};
+		const salesData = await calculateSalesData();
 
 		res.render("admin", { products, users, success, error, salesData, loggedin: true });
 	} catch (error) {
@@ -151,22 +105,7 @@ router.get("/orders", isOwnerLoggedIn, async (req, res) => {
 // Sales page
 router.get("/sales", isOwnerLoggedIn, async (req, res) => {
 	try {
-		const salesData = {
-			todaySales: Math.floor(Math.random() * 50000) + 10000,
-			weekSales: Math.floor(Math.random() * 300000) + 50000,
-			monthSales: Math.floor(Math.random() * 1200000) + 200000,
-			totalOrders: Math.floor(Math.random() * 500) + 100,
-			todayOrders: Math.floor(Math.random() * 50) + 10,
-			avgOrderValue: Math.floor(Math.random() * 5000) + 2000,
-			recentOrders: Array.from({ length: 10 }, (_, i) => ({
-				orderId: `ORD${1000 + i}`,
-				customer: `Customer ${i + 1}`,
-				amount: Math.floor(Math.random() * 10000) + 1000,
-				date: new Date(Date.now() - i * 86400000).toLocaleDateString(),
-				status: ['Completed', 'Pending', 'Processing'][Math.floor(Math.random() * 3)]
-			}))
-		};
-
+		const salesData = await calculateSalesData();
 		res.render("sales", { salesData, loggedin: true });
 	} catch (error) {
 		console.error(error);
