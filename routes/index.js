@@ -39,6 +39,10 @@ router.get("/contact", (req, res) => {
 	res.render("contact", { success, error, loggedin });
 });
 
+router.get("/privacy", (req, res) => {
+  res.render("privacy", { loggedin: req.cookies.token ? true : false });
+});
+
 // Apply coupon
 router.post("/apply-coupon", isloggedin, async (req, res) => {
 	try {
